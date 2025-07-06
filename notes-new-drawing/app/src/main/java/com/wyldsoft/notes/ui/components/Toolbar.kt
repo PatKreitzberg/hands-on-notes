@@ -28,8 +28,7 @@ fun UpdatedToolbar(
 ) {
     val scope = rememberCoroutineScope()
     var selectedProfileIndex by remember { mutableStateOf(0) } // Default to leftmost (index 0)
-    var isStrokeSelectionOpen by remember { mutableStateOf(false) }
-    var strokePanelRect by remember { mutableStateOf<Rect?>(null) }
+
 
     // Add a flag to track if we're waiting for panel to close
     var isPanelClosing by remember { mutableStateOf(false) }
@@ -56,72 +55,6 @@ fun UpdatedToolbar(
         Log.d("Toolbar:", "UI Refresh triggered: $refreshCounter")
     }
 
-    fun addStrokeOptionPanelRect() {
-        strokePanelRect?.let { rect ->
-            editorState.stateExcludeRects[ExcludeRects.StrokeOptions] = rect
-            editorState.stateExcludeRectsModified = true
-            println("Added exclusion rect: $rect")
-
-            val excludeRects = editorState.stateExcludeRects.values.toList()
-            EditorState.updateExclusionZones(excludeRects)
-            forceUIRefresh()
-        }
-    }
-
-    fun removeStrokeOptionPanelRect() {
-        editorState.stateExcludeRects.remove(ExcludeRects.StrokeOptions)
-        editorState.stateExcludeRectsModified = true
-        println("Removed exclusion rect")
-
-        val excludeRects = editorState.stateExcludeRects.values.toList()
-        EditorState.updateExclusionZones(excludeRects)
-    }
-
-    fun openStrokeOptionsPanel() {
-        println("Opening stroke options panel for profile $selectedProfileIndex")
-        isStrokeSelectionOpen = true
-        isPanelClosing = false
-        onPanelRemoved = null
-    }
-
-    fun closeStrokeOptionsPanel() {
-        println("Closing stroke options panel")
-        isPanelClosing = true
-
-        // Set up the callback for after panel is removed
-        onPanelRemoved = {
-            removeStrokeOptionPanelRect()
-            forceUIRefresh()
-            scope.launch {
-                println("REFRESH: onPanelRemoved about to forceRefresh()")
-                EditorState.isStrokeOptionsOpen.emit(false)
-                EditorState.forceRefresh()
-            }
-            isPanelClosing = false
-        }
-
-        // Trigger the panel removal
-        isStrokeSelectionOpen = false
-    }
-
-    fun handleProfileClick(profileIndex: Int) {
-        if (selectedProfileIndex == profileIndex && isStrokeSelectionOpen) {
-            // Same profile clicked - close panel
-            closeStrokeOptionsPanel()
-        } else if (selectedProfileIndex == profileIndex && !isStrokeSelectionOpen) {
-            // Same profile clicked - open panel
-            openStrokeOptionsPanel()
-        } else {
-            // Different profile - switch profile and update
-            if (isStrokeSelectionOpen) {
-                closeStrokeOptionsPanel()
-            }
-            selectedProfileIndex = profileIndex
-            val newProfile = profiles[profileIndex]
-            onPenProfileChanged(newProfile)
-            EditorState.updatePenProfile(newProfile)
-        }
-    }
 
     fun updateProfile(newProfile: PenProfile) {
         val updatedProfiles = profiles.toMutableList()
@@ -138,15 +71,6 @@ fun UpdatedToolbar(
     // Listen for drawing events to close panel
     LaunchedEffect(Unit) {
         launch {
-            EditorState.drawingStarted.collect {
-                if (isStrokeSelectionOpen) {
-                    println("Drawing started - closing stroke options panel")
-                    closeStrokeOptionsPanel()
-                }
-            }
-        }
-
-        launch {
             EditorState.forceScreenRefresh.collect {
                 println("REFRESH: Force screen refresh requested")
                 forceUIRefresh()
@@ -154,20 +78,6 @@ fun UpdatedToolbar(
         }
     }
 
-    // Monitor drawing state changes
-    LaunchedEffect(editorState.isDrawing) {
-        if (editorState.isDrawing && isStrokeSelectionOpen) {
-            println("REFRESH: Drawing started - closing stroke options panel")
-            closeStrokeOptionsPanel()
-        }
-    }
-
-    // Emit stroke options state changes
-    LaunchedEffect(isStrokeSelectionOpen) {
-        if (!isPanelClosing) {  // Only emit if not in the middle of closing
-            EditorState.isStrokeOptionsOpen.emit(isStrokeSelectionOpen)
-        }
-    }
 
     // Handle exclusion rect changes
     LaunchedEffect(editorState.stateExcludeRectsModified) {
@@ -204,7 +114,7 @@ fun UpdatedToolbar(
                 ProfileButton(
                     profile = profile,
                     isSelected = selectedProfileIndex == index,
-                    onClick = { handleProfileClick(index) }
+                    onClick = {  }
                 )
             }
 
@@ -216,39 +126,6 @@ fun UpdatedToolbar(
                 color = Color.Gray,
                 fontSize = 10.sp
             )
-        }
-
-        // Stroke options panel with disposal detection
-        if (isStrokeSelectionOpen) {
-            Box(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                DisposableEffect(Unit) {
-                    onDispose {
-                        // This runs when the panel is actually removed from composition
-                        println("StrokeOptionsPanel removed from composition")
-                        onPanelRemoved?.invoke()
-                        onPanelRemoved = null
-                    }
-                }
-
-                UpdatedStrokeOptionsPanel(
-                    currentProfile = currentProfile,
-                    onProfileChanged = { newProfile ->
-                        updateProfile(newProfile)
-                    },
-                    onPanelPositioned = { rect ->
-                        if (rect != strokePanelRect) {
-                            strokePanelRect = rect
-                            if (isStrokeSelectionOpen && !isPanelClosing) {
-                                scope.launch {
-                                    addStrokeOptionPanelRect()
-                                }
-                            }
-                        }
-                    }
-                )
-            }
         }
     }
 }
