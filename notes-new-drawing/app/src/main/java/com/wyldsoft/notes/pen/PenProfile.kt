@@ -46,11 +46,6 @@ data class PenProfile(
 
     fun getColorAsInt(): Int = strokeColor.toArgb()
 
-    // Create a copy with different properties
-    fun withPenType(newPenType: PenType): PenProfile = copy(penType = newPenType)
-    fun withColor(newColor: Color): PenProfile = copy(strokeColor = newColor)
-    fun withStrokeWidth(newWidth: Float): PenProfile = copy(strokeWidth = newWidth)
-
     // Legacy method for backward compatibility
     @Deprecated("Use getStrokeStyleForSDK instead", ReplaceWith("getStrokeStyleForSDK(SDKType.ONYX)"))
     fun getOnyxStrokeStyle(): Int = getStrokeStyleForSDK(SDKType.ONYX)

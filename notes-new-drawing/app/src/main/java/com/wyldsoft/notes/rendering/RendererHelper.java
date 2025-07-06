@@ -7,7 +7,6 @@ import android.graphics.Point;
 import android.graphics.RectF;
 import android.view.SurfaceView;
 
-import com.wyldsoft.notes.EraseArgs;
 import com.wyldsoft.notes.InteractiveMode;
 import com.wyldsoft.notes.shapemanagement.shapes.Shape;
 import com.onyx.android.sdk.utils.BitmapUtils;
@@ -24,7 +23,6 @@ public class RendererHelper {
         public Paint paint = new Paint();
         public Bitmap bitmap;
         public Canvas canvas;
-        public EraseArgs eraseArgs;
         public RectF clipRect;
         public Point viewPoint;
 
@@ -41,7 +39,6 @@ public class RendererHelper {
     private void initRendererMap() {
         rendererMap = new HashMap<>();
         rendererMap.put(InteractiveMode.SCRIBBLE, new NormalRenderer());
-        rendererMap.put(InteractiveMode.SCRIBBLE_ERASE, new EraseRenderer());
         rendererMap.put(InteractiveMode.SCRIBBLE_PARTIAL_REFRESH, new PartialRefreshRenderer());
     }
 
