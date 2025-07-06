@@ -4,8 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.Log
@@ -29,7 +27,7 @@ import androidx.core.graphics.createBitmap
 import com.wyldsoft.notes.touchhandling.OnyxTouchHelperWrapper
 import com.wyldsoft.notes.shapemanagement.EraseManager
 import com.wyldsoft.notes.refreshingscreen.PartialEraseRefresh
-import com.wyldsoft.notes.sdkintegration.onyx.OnyxDeviceReceiverWrapper
+import com.wyldsoft.notes.sdkintegration.SDKType.ONYX
 
 open class OnyxDrawingActivity : BaseDrawingActivity() {
     private var rxManager: RxManager? = null
@@ -121,7 +119,7 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
                 .setLimitRect(limit, ArrayList(excludeRects))
                 .openRawDrawing()
 
-            helper.setStrokeStyle(currentPenProfile.getOnyxStrokeStyle())
+            helper.setStrokeStyle(currentPenProfile.getStrokeStyleForSDK(ONYX))
             helper.setRawDrawingEnabled(true)
             helper.setRawDrawingRenderEnabled(true)
         }
@@ -359,14 +357,4 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
         }
     }
 
-    // Add method to clear all drawings
-    fun clearDrawing() {
-        drawnShapes.clear()
-        surfaceView?.let { sv ->
-            bitmap?.recycle()
-            bitmap = null
-            bitmapCanvas = null
-            cleanSurfaceView(sv)
-        }
-    }
 }

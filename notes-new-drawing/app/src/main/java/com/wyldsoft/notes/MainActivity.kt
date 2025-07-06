@@ -15,15 +15,6 @@ import com.wyldsoft.notes.sdkintegration.onyx.OnyxDrawingActivity
 class MainActivity : OnyxDrawingActivity() {
 
     companion object {
-        /**
-         * Factory method to create the appropriate drawing activity
-         * based on device type or configuration
-         */
-        fun createForDevice(): Class<out MainActivity> {
-            // Future: Add device detection logic here
-            // For now, always return Onyx implementation
-            return MainActivity::class.java
-        }
     }
 
     // MainActivity can add any app-specific functionality here

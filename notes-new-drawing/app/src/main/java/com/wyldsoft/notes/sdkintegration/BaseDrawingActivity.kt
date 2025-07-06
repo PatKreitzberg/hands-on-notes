@@ -106,7 +106,7 @@ abstract class BaseDrawingActivity : ComponentActivity() {
     }
 
     protected open fun initializeTouchHelper(surfaceView: SurfaceView) {
-        val touchHelper = createTouchHelper(surfaceView)
+        createTouchHelper(surfaceView)
 
         surfaceView.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             updateActiveSurface()
@@ -135,12 +135,6 @@ abstract class BaseDrawingActivity : ComponentActivity() {
         currentPenProfile = penProfile
         updatePaintFromProfile()
         updateTouchHelperWithProfile()
-    }
-
-    fun updateExclusionZones(excludeRects: List<Rect>) {
-        updateTouchHelperExclusionZones(excludeRects)
-        println("forceScreenRefresh() from updateExclusionZone")
-        //forceScreenRefresh()
     }
 
     protected open fun forceScreenRefresh() {

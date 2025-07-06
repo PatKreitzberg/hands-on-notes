@@ -24,7 +24,7 @@ public class EraseRenderer extends BaseRenderer {
         }
         final Iterator<TouchPoint> iterator = pointList.getRenderPoints().iterator();
         TouchPoint touchPoint = iterator.next();
-        final float lastDst[] = new float[2];
+        final float[] lastDst = new float[2];
         Path path = new Path();
         path.moveTo(touchPoint.getX(), touchPoint.getY());
         lastDst[0] = touchPoint.getX();

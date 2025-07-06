@@ -12,9 +12,9 @@ public enum ShapeTexture {
     CHARCOAL_V1(ShapeFactory.SHAPE_CHARCOAL_SCRIBBLE, PenTexture.CHARCOAL_SHAPE_V1, R.string.texture_1),
     CHARCOAL_V2(ShapeFactory.SHAPE_CHARCOAL_SCRIBBLE, PenTexture.CHARCOAL_SHAPE_V2, R.string.texture_2);
 
-    private int shapeType;
-    private int texture;
-    private int textureTextResId;
+    private final int shapeType;
+    private final int texture;
+    private final int textureTextResId;
 
     ShapeTexture(int shapeType, int texture, int textureTextResId) {
         this.shapeType = shapeType;

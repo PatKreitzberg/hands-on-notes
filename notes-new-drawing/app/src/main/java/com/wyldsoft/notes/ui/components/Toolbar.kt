@@ -1,6 +1,5 @@
 package com.wyldsoft.notes.ui.components
 
-import android.graphics.Rect
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -13,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wyldsoft.notes.ExcludeRects
 import com.wyldsoft.notes.PenIconUtils
 import kotlinx.coroutines.launch
 
@@ -34,7 +32,6 @@ fun UpdatedToolbar(
     var isPanelClosing by remember { mutableStateOf(false) }
 
     // Add a callback for when panel is fully removed
-    var onPanelRemoved: (() -> Unit)? by remember { mutableStateOf(null) }
 
     // Store 5 profiles
     var profiles by remember {
@@ -55,18 +52,6 @@ fun UpdatedToolbar(
         Log.d("Toolbar:", "UI Refresh triggered: $refreshCounter")
     }
 
-
-    fun updateProfile(newProfile: PenProfile) {
-        val updatedProfiles = profiles.toMutableList()
-        updatedProfiles[selectedProfileIndex] = newProfile
-        profiles = updatedProfiles
-
-        // Immediately apply the new profile
-        onPenProfileChanged(newProfile)
-        EditorState.updatePenProfile(newProfile)
-
-        println("Profile $selectedProfileIndex updated: $newProfile")
-    }
 
     // Listen for drawing events to close panel
     LaunchedEffect(Unit) {

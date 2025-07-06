@@ -10,8 +10,8 @@ import com.onyx.android.sdk.api.device.epd.UpdateMode;
 import com.onyx.android.sdk.rx.RxRequest;
 
 public class RendererToScreenRequest extends RxRequest {
-    private SurfaceView surfaceView;
-    private Bitmap bitmap;
+    private final SurfaceView surfaceView;
+    private final Bitmap bitmap;
 
     public RendererToScreenRequest(SurfaceView surfaceView, Bitmap bitmap) {
         this.surfaceView = surfaceView;

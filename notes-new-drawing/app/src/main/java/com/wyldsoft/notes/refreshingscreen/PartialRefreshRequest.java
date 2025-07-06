@@ -14,8 +14,8 @@ import com.onyx.android.sdk.rx.RxRequest;
 import com.onyx.android.sdk.utils.RectUtils;
 
 public class PartialRefreshRequest extends RxRequest {
-    private RectF refreshRect;
-    private SurfaceView surfaceView;
+    private final RectF refreshRect;
+    private final SurfaceView surfaceView;
     private Bitmap bitmap;
 
     public PartialRefreshRequest(Context context, SurfaceView surfaceView, RectF refreshRect) {

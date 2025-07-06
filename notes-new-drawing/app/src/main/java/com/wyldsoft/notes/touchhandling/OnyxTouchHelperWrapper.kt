@@ -3,7 +3,6 @@ package com.wyldsoft.notes.touchhandling
 import android.graphics.Rect
 import android.util.Log
 import com.onyx.android.sdk.pen.TouchHelper
-import com.wyldsoft.notes.touchhandling.BaseTouchHelper
 
 class OnyxTouchHelperWrapper(private val onyxTouchHelper: TouchHelper) : BaseTouchHelper() {
 
@@ -12,7 +11,7 @@ class OnyxTouchHelperWrapper(private val onyxTouchHelper: TouchHelper) : BaseTou
     }
 
     override fun setRawDrawingRenderEnabled(enabled: Boolean) {
-        onyxTouchHelper.setRawDrawingRenderEnabled(enabled)
+        onyxTouchHelper.isRawDrawingRenderEnabled = enabled
     }
 
     override fun setStrokeWidth(width: Float) {

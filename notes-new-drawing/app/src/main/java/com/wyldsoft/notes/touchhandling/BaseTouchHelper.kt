@@ -1,7 +1,6 @@
 package com.wyldsoft.notes.touchhandling
 
 import android.graphics.Rect
-import android.view.SurfaceView
 
 abstract class BaseTouchHelper {
     abstract fun setRawDrawingEnabled(enabled: Boolean)

@@ -1,5 +1,3 @@
 package com.wyldsoft.notes
 
-enum class ExcludeRects {
-    StrokeOptions
-}
+enum class ExcludeRects

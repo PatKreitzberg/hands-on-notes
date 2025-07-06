@@ -27,7 +27,7 @@ class PartialEraseRefresh {
             rendererHelper
         )
         //
-        EpdController.enablePost(surfaceView, 1);
+        EpdController.enablePost(surfaceView, 1)
         rxManager.enqueue(partialRefreshRequest, null)
     }
     
