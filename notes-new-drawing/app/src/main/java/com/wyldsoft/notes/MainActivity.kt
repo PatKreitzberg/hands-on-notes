@@ -1,7 +1,7 @@
 // MainActivity.kt - Refactored
 package com.wyldsoft.notes
 
-import com.wyldsoft.notes.sdkintegration.onyx.OnyxDrawingActivity
+import com.wyldsoft.notes.sdkintegration.DrawingActivity
 
 /**
  * Main activity that uses Onyx SDK implementation.
@@ -12,7 +12,7 @@ import com.wyldsoft.notes.sdkintegration.onyx.OnyxDrawingActivity
  * 2. Change this class to extend that implementation instead
  * 3. Or use a factory pattern to choose the implementation at runtime
  */
-class MainActivity : OnyxDrawingActivity() {
+class MainActivity : DrawingActivity() {
 
     companion object {
     }

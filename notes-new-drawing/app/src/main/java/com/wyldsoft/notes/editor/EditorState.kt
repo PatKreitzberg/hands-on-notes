@@ -5,7 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.wyldsoft.notes.ExcludeRects
-import com.wyldsoft.notes.sdkintegration.BaseDrawingActivity
+import com.wyldsoft.notes.MainActivity
+import com.wyldsoft.notes.sdkintegration.DrawingActivity
 import com.wyldsoft.notes.pen.PenProfile
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
@@ -22,9 +23,9 @@ class EditorState {
         val forceScreenRefresh = MutableSharedFlow<Unit>()
         val penProfileChanged = MutableSharedFlow<PenProfile>()
 
-        private var mainActivity: BaseDrawingActivity? = null
+        private var mainActivity: DrawingActivity? = null
 
-        fun setMainActivity(activity: BaseDrawingActivity) {
+        fun setMainActivity(activity: MainActivity) {
             mainActivity = activity
         }
 

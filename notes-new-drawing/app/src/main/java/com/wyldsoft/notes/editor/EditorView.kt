@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 import com.wyldsoft.notes.DrawingCanvas
-import com.wyldsoft.notes.ui.components.UpdatedToolbar
+import com.wyldsoft.notes.ui.components.Toolbar
 import com.wyldsoft.notes.pen.PenProfile
 
 @Composable
@@ -22,7 +22,7 @@ fun EditorView(
             .padding(16.dp)
     ) {
         // Updated toolbar with 5 profiles
-        UpdatedToolbar(
+        Toolbar(
             editorState = editorState,
             onPenProfileChanged = onPenProfileChanged
         )

@@ -20,7 +20,7 @@ import com.wyldsoft.notes.pen.PenProfile
 
 
 @Composable
-fun UpdatedToolbar(
+fun Toolbar(
     editorState: EditorState,
     onPenProfileChanged: (PenProfile) -> Unit = {}
 ) {
@@ -99,7 +99,12 @@ fun UpdatedToolbar(
                 ProfileButton(
                     profile = profile,
                     isSelected = selectedProfileIndex == index,
-                    onClick = {  }
+                    onClick = {
+                        selectedProfileIndex = index
+                        onPenProfileChanged(profile)
+                        EditorState.updatePenProfile(profile)
+                        Log.d("Toolbar", "Profile selected: $index - ${profile.penType.displayName}")
+                    }
                 )
             }
 
