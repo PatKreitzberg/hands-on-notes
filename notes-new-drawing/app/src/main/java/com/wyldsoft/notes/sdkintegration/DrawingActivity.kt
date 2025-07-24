@@ -261,6 +261,7 @@ abstract class DrawingActivity : ComponentActivity() {
         }
 
         override fun onRawErasingTouchPointListReceived(touchPointList: TouchPointList?) {
+            // TODO: Immediately convert from screen coordinates to note coordinates?
             touchPointList?.let { erasePointList ->
                 handleErasing(erasePointList)
             }
@@ -462,6 +463,8 @@ abstract class DrawingActivity : ComponentActivity() {
             }
         }
         surfaceView.holder.addCallback(surfaceCallback)
+
+        onyxTouchHelper = TouchHelper.create(surfaceView, createOnyxCallback())
     }
 
     fun updatePenProfile(penProfile: PenProfile) {
