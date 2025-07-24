@@ -264,6 +264,250 @@ com.wyldsoft.notes/
     └── logging/
 ```
 
+## Interface Definitions
+
+### Core System Interfaces
+
+```kotlin
+// Drawing system core interfaces
+interface DrawingCore {
+    fun addShape(shape: Shape)
+    fun removeShape(shapeId: String)
+    fun executeCommand(command: DrawCommand)
+    fun registerFeature(feature: FeatureModule)
+    fun getShapeRepository(): ShapeRepository
+    fun getRenderer(): CanvasRenderer
+}
+
+interface TouchProcessor {
+    fun processTouchPoints(points: TouchPointList)
+    fun setPenProfile(profile: PenProfile)
+    fun setMode(mode: TouchMode)
+}
+
+interface CanvasRenderer {
+    fun renderShape(shape: Shape)
+    fun refreshRegion(region: RectF)
+    fun fullRefresh()
+    fun addRenderer(renderer: ObjectRenderer, priority: Int)
+    fun removeRenderer(renderer: ObjectRenderer)
+}
+
+interface ShapeRepository {
+    fun addShape(shape: Shape)
+    fun removeShape(shapeId: String)
+    fun getShapesInRegion(region: RectF): List<Shape>
+    fun getAllShapes(): List<Shape>
+    fun clear()
+}
+```
+
+### Command Pattern Interfaces
+
+```kotlin
+interface Command {
+    fun execute()
+    fun undo()
+    fun canMergeWith(other: Command): Boolean = false
+}
+
+interface CommandExecutor {
+    fun execute(command: Command)
+    fun undo(): Boolean
+    fun redo(): Boolean
+    fun canUndo(): Boolean
+    fun canRedo(): Boolean
+    fun clearHistory()
+}
+```
+
+### Feature Module System Interfaces
+
+```kotlin
+interface FeatureModule {
+    val id: String
+    fun initialize(context: FeatureContext)
+    fun cleanup()
+    fun isEnabled(): Boolean
+}
+
+interface FeatureContext {
+    val drawingCore: DrawingCore
+    val gestureHandler: GestureHandler
+    val toolbar: ToolbarManager
+    val eventChannel: EventChannel
+}
+
+interface GestureHandler {
+    fun addGestureRecognizer(recognizer: GestureRecognizer)
+    fun removeGestureRecognizer(recognizer: GestureRecognizer)
+    fun setExclusiveMode(recognizer: GestureRecognizer?)
+}
+```
+
+### Rendering System Interfaces
+
+```kotlin
+interface ObjectRenderer {
+    val priority: Int
+    fun render(canvas: Canvas)
+    fun shouldRender(): Boolean = true
+    fun getDirtyRegion(): RectF?
+}
+
+interface RenderStack {
+    fun addRenderer(renderer: ObjectRenderer)
+    fun removeRenderer(renderer: ObjectRenderer)
+    fun renderAll(canvas: Canvas)
+    fun invalidateRegion(region: RectF)
+}
+
+interface RefreshManager {
+    fun requestPartialRefresh(region: RectF)
+    fun requestFullRefresh()
+    fun setRefreshMode(mode: RefreshMode)
+}
+```
+
+### Data Layer Interfaces
+
+```kotlin
+interface NoteRepository {
+    suspend fun getNote(id: String): Note?
+    suspend fun saveNote(note: Note)
+    suspend fun deleteNote(id: String)
+    suspend fun getNotesByFolder(folderId: String): List<Note>
+    suspend fun getNotesByNotebook(notebookId: String): List<Note>
+}
+
+interface ShapeSerializer {
+    fun serialize(shape: Shape): ByteArray
+    fun deserialize(data: ByteArray): Shape
+    fun serializeBatch(shapes: List<Shape>): ByteArray
+    fun deserializeBatch(data: ByteArray): List<Shape>
+}
+
+interface SyncService {
+    suspend fun syncNote(noteId: String)
+    suspend fun syncAll()
+    fun getSyncStatus(noteId: String): SyncStatus
+    fun addSyncListener(listener: SyncListener)
+}
+```
+
+### Platform/SDK Interfaces
+
+```kotlin
+interface DeviceSDK {
+    fun initialize(context: Context)
+    fun createTouchHelper(): Any
+    fun setupRefreshMode(view: View)
+    fun requestPartialRefresh(view: View, region: RectF)
+    fun getDeviceCapabilities(): DeviceCapabilities
+}
+
+interface ShapeFactory {
+    fun createShape(
+        points: TouchPointList,
+        penProfile: PenProfile,
+        pressure: Float
+    ): Shape
+}
+
+interface TouchEventProcessor {
+    fun onTouchEvent(event: MotionEvent): Boolean
+    fun onTouchPoints(points: TouchPointList)
+    fun setTouchListener(listener: TouchListener)
+}
+```
+
+### UI Layer Interfaces
+
+```kotlin
+interface ToolbarManager {
+    fun addAction(action: ToolbarAction)
+    fun removeAction(actionId: String)
+    fun setSelectedPenProfile(profile: PenProfile)
+    fun showOptions(options: List<ToolbarOption>)
+}
+
+interface DrawingView {
+    fun getCanvas(): Canvas
+    fun invalidate(region: RectF)
+    fun setOnDrawListener(listener: OnDrawListener)
+}
+
+interface EditorScreen {
+    fun showLoading()
+    fun hideLoading()
+    fun showError(message: String)
+    fun navigateToHome()
+}
+```
+
+### Event System Interfaces
+
+```kotlin
+// For non-critical async operations only
+interface EventChannel {
+    suspend fun send(event: AppEvent)
+    fun tryOffer(event: AppEvent): Boolean
+    fun asFlow(): Flow<AppEvent>
+}
+
+interface EventListener<T : AppEvent> {
+    fun onEvent(event: T)
+}
+```
+
+### Memory Management Interfaces
+
+```kotlin
+interface ObjectPool<T> {
+    fun obtain(): T
+    fun recycle(obj: T)
+    fun clear()
+    fun getPoolSize(): Int
+}
+
+interface MemoryCache<K, V> {
+    fun get(key: K): V?
+    fun put(key: K, value: V)
+    fun remove(key: K)
+    fun clear()
+    fun evictAll()
+}
+```
+
+### Feature-Specific Interfaces
+
+```kotlin
+// Selection feature
+interface SelectionManager {
+    fun startSelection(startPoint: PointF)
+    fun updateSelection(currentPoint: PointF)
+    fun completeSelection(): Selection?
+    fun clearSelection()
+    fun getSelectedShapes(): List<Shape>
+}
+
+// Layer feature
+interface LayerManager {
+    fun createLayer(name: String): Layer
+    fun deleteLayer(layerId: String)
+    fun setActiveLayer(layerId: String)
+    fun reorderLayers(layerIds: List<String>)
+    fun getLayersForNote(noteId: String): List<Layer>
+}
+
+// Export feature
+interface ExportService {
+    suspend fun exportToPDF(note: Note, outputPath: String)
+    suspend fun exportToPNG(note: Note, outputPath: String)
+    suspend fun exportToSVG(note: Note, outputPath: String)
+}
+```
+
 ## Key Design Patterns
 
 ### 1. Command Pattern for Undo/Redo
@@ -293,19 +537,22 @@ class DrawShapeCommand(
 
 ### 2. Feature Module Pattern
 ```kotlin
-interface FeatureModule {
-    fun registerWith(editor: EditorCore)
-    fun cleanup()
-}
-
 class SelectionModule : FeatureModule {
-    override fun registerWith(editor: EditorCore) {
-        editor.gestureHandler.addGestureRecognizer(
+    override val id = "selection"
+    
+    override fun initialize(context: FeatureContext) {
+        context.gestureHandler.addGestureRecognizer(
             LassoGestureRecognizer { path ->
                 handleLassoComplete(path)
             }
         )
     }
+    
+    override fun cleanup() {
+        // Clean up resources
+    }
+    
+    override fun isEnabled() = true
 }
 ```
 
@@ -355,26 +602,36 @@ class RenderStackManager {
 
 ```kotlin
 class SelectionModule : FeatureModule {
+    override val id = "selection"
     private lateinit var selectionManager: SelectionManager
     private lateinit var selectionRenderer: SelectionRenderer
     
-    override fun registerWith(editor: EditorCore) {
+    override fun initialize(context: FeatureContext) {
+        selectionManager = SelectionManagerImpl(context.drawingCore.getShapeRepository())
+        selectionRenderer = SelectionRenderer()
+        
         // Register gesture
-        editor.gestureHandler.addGestureRecognizer(
+        context.gestureHandler.addGestureRecognizer(
             LassoGestureRecognizer { path ->
                 val selected = findShapesInPath(path)
                 selectionManager.setSelection(selected)
-                editor.renderManager.addRenderer(selectionRenderer, priority = 100)
+                context.drawingCore.getRenderer().addRenderer(selectionRenderer, priority = 100)
             }
         )
         
         // Register toolbar action
-        editor.toolbar.addAction(
+        context.toolbar.addAction(
             SelectionAction { 
-                editor.touchProcessor.setMode(TouchMode.SELECTION)
+                context.drawingCore.getRenderer().setMode(TouchMode.SELECTION)
             }
         )
     }
+    
+    override fun cleanup() {
+        context.drawingCore.getRenderer().removeRenderer(selectionRenderer)
+    }
+    
+    override fun isEnabled() = true
 }
 ```
 
