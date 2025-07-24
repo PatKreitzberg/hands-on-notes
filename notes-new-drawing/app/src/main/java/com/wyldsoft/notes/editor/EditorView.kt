@@ -33,9 +33,18 @@ fun EditorView(
         // Toolbar floats on top of the canvas
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.TopCenter)
-                .padding(16.dp)
+                .then(
+                    if (editorState.isToolbarCollapsed) {
+                        Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = 16.dp, end = 16.dp)
+                    } else {
+                        Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.TopCenter)
+                            .padding(16.dp)
+                    }
+                )
                 .onGloballyPositioned { coordinates ->
                     // Update toolbar bounds in EditorState for easy access
                     val position = coordinates.positionInRoot()

@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 class EditorState {
     var stateExcludeRects = mutableMapOf<ExcludeRects, Rect>()
     var stateExcludeRectsModified by mutableStateOf(false)
+    var isToolbarCollapsed by mutableStateOf(false)
 
     companion object {
         val refreshUi = MutableSharedFlow<Unit>()
@@ -30,6 +31,7 @@ class EditorState {
 
         private val _toolbarBounds = MutableStateFlow(ToolbarBounds())
         val toolbarBounds: StateFlow<ToolbarBounds> = _toolbarBounds.asStateFlow()
+        val toolbarBoundsChanged = MutableSharedFlow<ToolbarBounds>()
 
         private var mainActivity: DrawingActivity? = null
 
@@ -71,12 +73,18 @@ class EditorState {
         }
 
         fun updateToolbarBounds(offset: Offset, size: IntSize) {
-            _toolbarBounds.value = ToolbarBounds(
+            val newBounds = ToolbarBounds(
                 x = offset.x.toInt(),
                 y = offset.y.toInt(),
                 width = size.width,
                 height = size.height
             )
+            _toolbarBounds.value = newBounds
+            
+            // Emit the change
+            kotlinx.coroutines.GlobalScope.launch {
+                toolbarBoundsChanged.emit(newBounds)
+            }
         }
 
     }

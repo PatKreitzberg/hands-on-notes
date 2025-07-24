@@ -4,7 +4,11 @@ import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -81,40 +85,74 @@ fun Toolbar(
         EditorState.updatePenProfile(currentProfile)
     }
 
-    Column {
-        // Main toolbar - single row with 5 profile buttons
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .border(1.dp, Color.Gray)
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Profiles:", color = Color.Black, fontSize = 12.sp)
+    Row(
+        modifier = Modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Main toolbar content - only visible when not collapsed
+        if (!editorState.isToolbarCollapsed) {
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .background(Color.White)
+                    .border(1.dp, Color.Gray)
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Profiles:", color = Color.Black, fontSize = 12.sp)
 
-            // 5 Profile buttons
-            profiles.forEachIndexed { index, profile ->
-                ProfileButton(
-                    profile = profile,
-                    isSelected = selectedProfileIndex == index,
-                    onClick = {
-                        selectedProfileIndex = index
-                        onPenProfileChanged(profile)
-                        EditorState.updatePenProfile(profile)
-                        Log.d("Toolbar", "Profile selected: $index - ${profile.penType.displayName}")
-                    }
+                // 5 Profile buttons
+                profiles.forEachIndexed { index, profile ->
+                    ProfileButton(
+                        profile = profile,
+                        isSelected = selectedProfileIndex == index,
+                        onClick = {
+                            selectedProfileIndex = index
+                            onPenProfileChanged(profile)
+                            EditorState.updatePenProfile(profile)
+                            Log.d("Toolbar", "Profile selected: $index - ${profile.penType.displayName}")
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Debug info
+                Text(
+                    text = "Profile: ${selectedProfileIndex + 1} | ${currentProfile.penType.displayName} | Refresh: $refreshCounter",
+                    color = Color.Gray,
+                    fontSize = 10.sp
                 )
             }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Debug info
-            Text(
-                text = "Profile: ${selectedProfileIndex + 1} | ${currentProfile.penType.displayName} | Refresh: $refreshCounter",
-                color = Color.Gray,
-                fontSize = 10.sp
+        }
+        
+        // Collapse/Expand button - always visible
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(24.dp)
+                .background(Color.White)
+                .border(1.dp, Color.Gray)
+                .clickable {
+                    editorState.isToolbarCollapsed = !editorState.isToolbarCollapsed
+                    Log.d("Toolbar", "Toolbar collapsed state: ${editorState.isToolbarCollapsed}")
+                    // Force refresh to update exclusion rects
+                    forceUIRefresh()
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (editorState.isToolbarCollapsed) 
+                    Icons.Default.ChevronLeft 
+                else 
+                    Icons.Default.ChevronRight,
+                contentDescription = if (editorState.isToolbarCollapsed) 
+                    "Expand toolbar" 
+                else 
+                    "Collapse toolbar",
+                tint = Color.Gray,
+                modifier = Modifier.size(20.dp)
             )
         }
     }

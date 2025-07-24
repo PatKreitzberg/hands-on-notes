@@ -17,6 +17,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.graphics.createBitmap
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import com.onyx.android.sdk.data.note.TouchPoint
 import com.onyx.android.sdk.pen.TouchHelper
 import com.onyx.android.sdk.pen.data.TouchPointList
@@ -88,6 +90,13 @@ abstract class DrawingActivity : ComponentActivity() {
         }
 
         EditorState.setMainActivity(this as com.wyldsoft.notes.MainActivity)
+        
+        // Observe toolbar bounds changes to update TouchHelper exclusion rects
+        lifecycleScope.launch {
+            EditorState.toolbarBoundsChanged.collect { _ ->
+                updateTouchHelperExclusionRects()
+            }
+        }
     }
 
 
@@ -182,6 +191,18 @@ abstract class DrawingActivity : ComponentActivity() {
 
             helper.setRawDrawingEnabled(true)
             helper.setRawDrawingRenderEnabled(true)
+        }
+    }
+    
+    private fun updateTouchHelperExclusionRects() {
+        onyxTouchHelper?.let { helper ->
+            surfaceView?.let { sv ->
+                val limit = Rect()
+                sv.getLocalVisibleRect(limit)
+                val excludeRects = EditorState.getCurrentExclusionRects()
+                Log.d(TAG, "Updating exclusion rects due to toolbar change: ${excludeRects.size} rects")
+                helper.setLimitRect(limit, ArrayList(excludeRects))
+            }
         }
     }
 
