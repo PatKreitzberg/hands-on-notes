@@ -138,11 +138,13 @@ abstract class DrawingActivity : ComponentActivity() {
     }
 
     fun onResumeDrawing() {
+        onyxTouchHelper?.openRawDrawing()
         onyxTouchHelper?.setRawDrawingEnabled(true)
     }
 
     fun onPauseDrawing() {
         onyxTouchHelper?.setRawDrawingEnabled(false)
+        onyxTouchHelper?.closeRawDrawing()
     }
 
     fun onCleanupSDK() {
@@ -150,58 +152,39 @@ abstract class DrawingActivity : ComponentActivity() {
         drawnShapes.clear()
     }
 
-    fun updateActiveSurface() {
-        updateTouchHelperWithProfile()
-    }
+    // updateActiveSurface is just an alias for updateTouchHelperWithProfile
+    fun updateActiveSurface() = updateTouchHelperWithProfile()
 
     fun updateTouchHelperWithProfile() {
-        onyxTouchHelper?.let { helper ->
-            helper.setRawDrawingEnabled(false)
-            helper.closeRawDrawing()
-
-            val limit = Rect()
-            surfaceView?.getLocalVisibleRect(limit)
-
-            val excludeRects = EditorState.getCurrentExclusionRects()
-            Log.d("ExclusionRects", "Current exclusion rects ${excludeRects.size}")
-            helper.setStrokeWidth(currentPenProfile.strokeWidth)
-                .setStrokeColor(currentPenProfile.getColorAsInt())
-                .setLimitRect(limit, ArrayList(excludeRects))
-                .openRawDrawing()
-
-            helper.setStrokeStyle(currentPenProfile.getStrokeStyle())
-            helper.setRawDrawingEnabled(true)
-            helper.setRawDrawingRenderEnabled(true)
-        }
-    }
-
-    fun updateTouchHelperExclusionZones(excludeRects: List<Rect>) {
-        onyxTouchHelper?.let { helper ->
-            helper.setRawDrawingEnabled(false)
-            helper.closeRawDrawing()
-
-            val limit = Rect()
-            surfaceView?.getLocalVisibleRect(limit)
-
-            Log.d("ExclusionRects", "Current exclusion rects ${excludeRects.size}")
-            helper.setStrokeWidth(currentPenProfile.strokeWidth)
-                .setLimitRect(limit, ArrayList(excludeRects))
-                .openRawDrawing()
-            helper.setStrokeStyle(currentPenProfile.getStrokeStyle())
-
-            helper.setRawDrawingEnabled(true)
-            helper.setRawDrawingRenderEnabled(true)
-        }
+        updateTouchHelper(updatePenSettings = true)
     }
     
     private fun updateTouchHelperExclusionRects() {
+        updateTouchHelper(updatePenSettings = false)
+    }
+    
+    private fun updateTouchHelper(updatePenSettings: Boolean) {
         onyxTouchHelper?.let { helper ->
             surfaceView?.let { sv ->
+                onPauseDrawing()
+                
                 val limit = Rect()
                 sv.getLocalVisibleRect(limit)
                 val excludeRects = EditorState.getCurrentExclusionRects()
-                Log.d(TAG, "Updating exclusion rects due to toolbar change: ${excludeRects.size} rects")
-                helper.setLimitRect(limit, ArrayList(excludeRects))
+                
+                Log.d(TAG, "Updating TouchHelper - exclusion rects: ${excludeRects.size}, updatePen: $updatePenSettings")
+                
+                if (updatePenSettings) {
+                    helper.setStrokeWidth(currentPenProfile.strokeWidth)
+                        .setStrokeColor(currentPenProfile.getColorAsInt())
+                        .setLimitRect(limit, ArrayList(excludeRects))
+                        .openRawDrawing()
+                    helper.setStrokeStyle(currentPenProfile.getStrokeStyle())
+                } else {
+                    helper.setLimitRect(limit, ArrayList(excludeRects))
+                }
+                
+                onResumeDrawing()
             }
         }
     }
@@ -211,13 +194,9 @@ abstract class DrawingActivity : ComponentActivity() {
         deviceReceiver.enable(this, true)
         deviceReceiver.setSystemNotificationPanelChangeListener { open ->
             onyxTouchHelper?.setRawDrawingEnabled(!open)
-            surfaceView?.let { sv ->
-                renderToScreen(sv, bitmap)
-            }
+            refreshScreen()
         }.setSystemScreenOnListener {
-            surfaceView?.let { sv ->
-                renderToScreen(sv, bitmap)
-            }
+            refreshScreen()
         }
     }
 
@@ -231,6 +210,12 @@ abstract class DrawingActivity : ComponentActivity() {
             cleanSurfaceView(sv)
             // Recreate bitmap from all stored shapes
             recreateBitmapFromShapes()
+            refreshScreen()
+        }
+    }
+    
+    private fun refreshScreen() {
+        surfaceView?.let { sv ->
             bitmap?.let { renderToScreen(sv, it) }
         }
     }
@@ -252,7 +237,6 @@ abstract class DrawingActivity : ComponentActivity() {
         override fun onEndRawDrawing(b: Boolean, touchPoint: TouchPoint?) {
             isDrawingInProgress = false
             enableFingerTouch()
-            forceScreenRefresh()
             EditorState.notifyDrawingEnded()
         }
 
@@ -261,6 +245,7 @@ abstract class DrawingActivity : ComponentActivity() {
         }
 
         override fun onRawDrawingTouchPointListReceived(touchPointList: TouchPointList?) {
+            // TODO: Immediately convert from screen coordinates to note coordinates?
             touchPointList?.points?.let { points ->
                 if (!isDrawingInProgress) {
                     isDrawingInProgress = true
@@ -286,7 +271,6 @@ abstract class DrawingActivity : ComponentActivity() {
             touchPointList?.let { erasePointList ->
                 handleErasing(erasePointList)
             }
-
         }
     }
 
@@ -376,18 +360,7 @@ abstract class DrawingActivity : ComponentActivity() {
 
     private fun renderShapeToBitmap(shape: Shape) {
         bitmap?.let { bmp ->
-            val renderContext = rendererHelper?.getRenderContext() ?: return
-            renderContext.bitmap = bmp
-            renderContext.canvas = Canvas(bmp)
-            renderContext.paint = Paint().apply {
-                isAntiAlias = true
-                style = Paint.Style.STROKE
-                strokeCap = Paint.Cap.ROUND
-                strokeJoin = Paint.Join.ROUND
-            }
-            // Initialize viewPoint for shapes that need it (like CharcoalScribbleShape)
-            renderContext.viewPoint = android.graphics.Point(0, 0)
-
+            val renderContext = prepareRenderContext(bmp) ?: return
             shape.render(renderContext)
         }
     }
@@ -401,23 +374,28 @@ abstract class DrawingActivity : ComponentActivity() {
             bitmapCanvas?.drawColor(Color.WHITE)
 
             // Get render context
-            val renderContext = rendererHelper?.getRenderContext() ?: return
-            renderContext.bitmap = bitmap
-            renderContext.canvas = bitmapCanvas!!
-            renderContext.paint = Paint().apply {
-                isAntiAlias = true
-                style = Paint.Style.STROKE
-                strokeCap = Paint.Cap.ROUND
-                strokeJoin = Paint.Join.ROUND
-            }
-            // Initialize viewPoint for shapes that need it (like CharcoalScribbleShape)
-            renderContext.viewPoint = android.graphics.Point(0, 0)
+            val renderContext = prepareRenderContext(bitmap!!) ?: return
 
             // Render all shapes
             for (shape in drawnShapes) {
                 shape.render(renderContext)
             }
         }
+    }
+    
+    private fun prepareRenderContext(bitmap: Bitmap): com.onyx.android.sdk.data.note.RenderContext? {
+        val renderContext = rendererHelper?.getRenderContext() ?: return null
+        renderContext.bitmap = bitmap
+        renderContext.canvas = Canvas(bitmap)
+        renderContext.paint = Paint().apply {
+            isAntiAlias = true
+            style = Paint.Style.STROKE
+            strokeCap = Paint.Cap.ROUND
+            strokeJoin = Paint.Join.ROUND
+        }
+        // Initialize viewPoint for shapes that need it (like CharcoalScribbleShape)
+        renderContext.viewPoint = android.graphics.Point(0, 0)
+        return renderContext
     }
 
     override fun onResume() {
@@ -471,12 +449,12 @@ abstract class DrawingActivity : ComponentActivity() {
         val surfaceCallback = object : SurfaceHolder.Callback {
             override fun surfaceCreated(holder: SurfaceHolder) {
                 cleanSurfaceView(surfaceView)
-                bitmap?.let { renderToScreen(surfaceView, it) }
+                refreshScreen()
             }
 
             override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
                 updateActiveSurface()
-                bitmap?.let { renderToScreen(surfaceView, it) }
+                refreshScreen()
             }
 
             override fun surfaceDestroyed(holder: SurfaceHolder) {

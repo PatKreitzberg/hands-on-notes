@@ -1,6 +1,7 @@
 package com.wyldsoft.notes.editor
 
 import android.graphics.Rect
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -47,9 +48,10 @@ class EditorState {
         }
 
         fun notifyDrawingEnded() {
+            // Note: do not refresh screen here, as it may cause flickering
+            Log.d("EditorState", "notifyDrawingEnded called")
             kotlinx.coroutines.GlobalScope.launch {
                 drawingEnded.emit(Unit)
-                forceScreenRefresh.emit(Unit)
             }
         }
 

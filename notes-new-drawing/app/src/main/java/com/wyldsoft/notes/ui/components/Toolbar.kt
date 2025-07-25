@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.onyx.android.sdk.api.device.epd.EpdController
 import com.wyldsoft.notes.PenIconUtils
 import kotlinx.coroutines.launch
 
@@ -52,6 +53,7 @@ fun Toolbar(
     var refreshCounter by remember { mutableStateOf(0) }
 
     fun forceUIRefresh() {
+        EpdController.enablePost(1) // Enable post to force UI refresh
         refreshCounter++
         scope.launch {
             EditorState.refreshUi.emit(Unit)
