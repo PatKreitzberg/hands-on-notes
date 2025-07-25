@@ -37,7 +37,7 @@ fun EditorView(
                     if (editorState.isToolbarCollapsed) {
                         Modifier
                             .align(Alignment.TopEnd)
-                            .padding(top = 16.dp, end = 16.dp)
+                            .padding(16.dp)
                     } else {
                         Modifier
                             .fillMaxWidth()

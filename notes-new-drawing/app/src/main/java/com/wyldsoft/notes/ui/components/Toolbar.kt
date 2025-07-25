@@ -35,11 +35,8 @@ fun Toolbar(
     val scope = rememberCoroutineScope()
     var selectedProfileIndex by remember { mutableStateOf(0) } // Default to leftmost (index 0)
 
-
     // Add a flag to track if we're waiting for panel to close
     var isPanelClosing by remember { mutableStateOf(false) }
-
-    // Add a callback for when panel is fully removed
 
     // Store 5 profiles
     var profiles by remember {
@@ -61,22 +58,19 @@ fun Toolbar(
         Log.d("Toolbar:", "UI Refresh triggered: $refreshCounter")
     }
 
-
-    // Listen for drawing events to close panel
     LaunchedEffect(Unit) {
         launch {
             EditorState.forceScreenRefresh.collect {
-                println("REFRESH: Force screen refresh requested")
+                Log.d("Toolbar", "REFRESH: toolbar Force screen refresh requested")
                 forceUIRefresh()
             }
         }
     }
 
-
     // Handle exclusion rect changes
     LaunchedEffect(editorState.stateExcludeRectsModified) {
         if (editorState.stateExcludeRectsModified) {
-            println("Exclusion rects modified - current zones: ${editorState.stateExcludeRects.keys}")
+            Log.d("Toolbar", "Exclusion rects modified - current zones: ${editorState.stateExcludeRects.keys}")
             editorState.stateExcludeRectsModified = false
             if (!isPanelClosing) {  // Only refresh if not waiting for panel to close
                 forceUIRefresh()
@@ -91,54 +85,62 @@ fun Toolbar(
     }
 
     Row(
-        modifier = Modifier,
+        modifier = Modifier
+            .then(
+                if (!editorState.isToolbarCollapsed) {
+                    Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .border(1.dp, Color.Gray)
+                        .padding(BUTTON_PADDING)
+                } else {
+                    Modifier.wrapContentSize()
+                }
+            ),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Main toolbar content - only visible when not collapsed
         if (!editorState.isToolbarCollapsed) {
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(Color.White)
-                    .border(1.dp, Color.Gray)
-                    .padding(BUTTON_PADDING),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // 5 Profile buttons
-                profiles.forEachIndexed { index, profile ->
-                    ProfileButton(
-                        profile = profile,
-                        isSelected = selectedProfileIndex == index,
-                        buttonHeight = BUTTON_HEIGHT,
-                        onClick = {
-                            selectedProfileIndex = index
-                            onPenProfileChanged(profile)
-                            EditorState.updatePenProfile(profile)
-                            Log.d("Toolbar", "Profile selected: $index - ${profile.penType.displayName}")
-                        }
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                // Debug info
-                Text(
-                    text = "Profile: ${selectedProfileIndex + 1} | ${currentProfile.penType.displayName} | Refresh: $refreshCounter",
-                    color = Color.Gray,
-                    fontSize = 10.sp
+            // 5 Profile buttons
+            profiles.forEachIndexed { index, profile ->
+                ProfileButton(
+                    profile = profile,
+                    isSelected = selectedProfileIndex == index,
+                    buttonHeight = BUTTON_HEIGHT,
+                    onClick = {
+                        selectedProfileIndex = index
+                        onPenProfileChanged(profile)
+                        EditorState.updatePenProfile(profile)
+                        Log.d("Toolbar", "Profile selected: $index - ${profile.penType.displayName}")
+                    }
                 )
             }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Debug info
+            Text(
+                text = "Profile: ${selectedProfileIndex + 1} | ${currentProfile.penType.displayName} | Refresh: $refreshCounter",
+                color = Color.Gray,
+                fontSize = 10.sp
+            )
         }
         
         // Collapse/Expand button - always visible
         Box(
             modifier = Modifier
-                //.fillMaxHeight()
-                .height(BUTTON_HEIGHT + BUTTON_PADDING + 8.dp) // Adjust height to match button
+                .height(BUTTON_HEIGHT)
                 .width(24.dp)
-                .background(Color.White)
-                .border(1.dp, Color.Gray)
+                .then(
+                    if (!editorState.isToolbarCollapsed) {
+                        Modifier
+                    } else {
+                        Modifier
+                            .background(Color.White)
+                            .border(1.dp, Color.Gray)
+                    }
+                )
                 .clickable {
                     editorState.isToolbarCollapsed = !editorState.isToolbarCollapsed
                     Log.d("Toolbar", "Toolbar collapsed state: ${editorState.isToolbarCollapsed}")

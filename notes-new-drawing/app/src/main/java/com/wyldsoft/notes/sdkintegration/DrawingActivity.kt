@@ -383,7 +383,7 @@ abstract class DrawingActivity : ComponentActivity() {
         }
     }
     
-    private fun prepareRenderContext(bitmap: Bitmap): com.onyx.android.sdk.data.note.RenderContext? {
+    private fun prepareRenderContext(bitmap: Bitmap): RendererHelper.RenderContext? {
         val renderContext = rendererHelper?.getRenderContext() ?: return null
         renderContext.bitmap = bitmap
         renderContext.canvas = Canvas(bitmap)
