@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wyldsoft.notes.PenIconUtils
@@ -28,6 +29,8 @@ fun Toolbar(
     editorState: EditorState,
     onPenProfileChanged: (PenProfile) -> Unit = {}
 ) {
+    val BUTTON_HEIGHT = 48.dp
+    val BUTTON_PADDING = 8.dp
     val scope = rememberCoroutineScope()
     var selectedProfileIndex by remember { mutableStateOf(0) } // Default to leftmost (index 0)
 
@@ -96,17 +99,16 @@ fun Toolbar(
                     .weight(1f)
                     .background(Color.White)
                     .border(1.dp, Color.Gray)
-                    .padding(8.dp),
+                    .padding(BUTTON_PADDING),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Profiles:", color = Color.Black, fontSize = 12.sp)
-
                 // 5 Profile buttons
                 profiles.forEachIndexed { index, profile ->
                     ProfileButton(
                         profile = profile,
                         isSelected = selectedProfileIndex == index,
+                        buttonHeight = BUTTON_HEIGHT,
                         onClick = {
                             selectedProfileIndex = index
                             onPenProfileChanged(profile)
@@ -130,7 +132,8 @@ fun Toolbar(
         // Collapse/Expand button - always visible
         Box(
             modifier = Modifier
-                .fillMaxHeight()
+                //.fillMaxHeight()
+                .height(BUTTON_HEIGHT + BUTTON_PADDING + 8.dp) // Adjust height to match button
                 .width(24.dp)
                 .background(Color.White)
                 .border(1.dp, Color.Gray)
@@ -162,6 +165,7 @@ fun Toolbar(
 fun ProfileButton(
     profile: PenProfile,
     isSelected: Boolean,
+    buttonHeight: Dp,
     onClick: () -> Unit
 ) {
     Button(
@@ -174,7 +178,7 @@ fun ProfileButton(
             width = if (isSelected) 2.dp else 1.dp,
             color = if (isSelected) Color.Black else Color.Gray
         ),
-        modifier = Modifier.size(48.dp),
+        modifier = Modifier.size(buttonHeight),
         contentPadding = PaddingValues(4.dp)
     ) {
         Icon(
