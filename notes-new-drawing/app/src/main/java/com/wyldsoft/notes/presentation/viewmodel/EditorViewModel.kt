@@ -12,6 +12,7 @@ import com.wyldsoft.notes.viewport.ViewportManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
 class EditorViewModel(
@@ -43,6 +44,35 @@ class EditorViewModel(
         viewModelScope.launch {
             if (currentNote.value == null) {
                 noteRepository.createNewNote()
+            }
+        }
+        
+        // Save viewport state when it changes (with debounce to avoid too frequent saves)
+        viewModelScope.launch {
+            viewportState
+                .debounce(500) // Wait 500ms after last change before saving
+                .collect { state ->
+                    currentNote.value?.let { note ->
+                        noteRepository.updateViewportState(
+                            note.id,
+                            state.scale,
+                            state.offsetX,
+                            state.offsetY
+                        )
+                    }
+                }
+        }
+        
+        // Restore viewport state when note changes
+        viewModelScope.launch {
+            currentNote.collect { note ->
+                note?.let {
+                    viewportManager.setState(
+                        it.viewportScale,
+                        it.viewportOffsetX,
+                        it.viewportOffsetY
+                    )
+                }
             }
         }
     }

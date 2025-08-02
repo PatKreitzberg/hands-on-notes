@@ -310,6 +310,9 @@ public final class NotebookDao_Impl implements NotebookDao {
             final int _cursorIndexOfSettings = CursorUtil.getColumnIndexOrThrow(_cursor, "settings");
             final int _cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "createdAt");
             final int _cursorIndexOfModifiedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "modifiedAt");
+            final int _cursorIndexOfViewportScale = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportScale");
+            final int _cursorIndexOfViewportOffsetX = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportOffsetX");
+            final int _cursorIndexOfViewportOffsetY = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportOffsetY");
             final List<NoteEntity> _result = new ArrayList<NoteEntity>(_cursor.getCount());
             while (_cursor.moveToNext()) {
               final NoteEntity _item;
@@ -335,7 +338,13 @@ public final class NotebookDao_Impl implements NotebookDao {
               _tmpCreatedAt = _cursor.getLong(_cursorIndexOfCreatedAt);
               final long _tmpModifiedAt;
               _tmpModifiedAt = _cursor.getLong(_cursorIndexOfModifiedAt);
-              _item = new NoteEntity(_tmpId,_tmpTitle,_tmpParentNotebookId,_tmpFolderId,_tmpSettings,_tmpCreatedAt,_tmpModifiedAt);
+              final float _tmpViewportScale;
+              _tmpViewportScale = _cursor.getFloat(_cursorIndexOfViewportScale);
+              final float _tmpViewportOffsetX;
+              _tmpViewportOffsetX = _cursor.getFloat(_cursorIndexOfViewportOffsetX);
+              final float _tmpViewportOffsetY;
+              _tmpViewportOffsetY = _cursor.getFloat(_cursorIndexOfViewportOffsetY);
+              _item = new NoteEntity(_tmpId,_tmpTitle,_tmpParentNotebookId,_tmpFolderId,_tmpSettings,_tmpCreatedAt,_tmpModifiedAt,_tmpViewportScale,_tmpViewportOffsetX,_tmpViewportOffsetY);
               _result.add(_item);
             }
             __db.setTransactionSuccessful();
@@ -382,6 +391,9 @@ public final class NotebookDao_Impl implements NotebookDao {
           final int _cursorIndexOfSettings = CursorUtil.getColumnIndexOrThrow(_cursor, "settings");
           final int _cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "createdAt");
           final int _cursorIndexOfModifiedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "modifiedAt");
+          final int _cursorIndexOfViewportScale = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportScale");
+          final int _cursorIndexOfViewportOffsetX = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportOffsetX");
+          final int _cursorIndexOfViewportOffsetY = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportOffsetY");
           final NoteEntity _result;
           if (_cursor.moveToFirst()) {
             final String _tmpId;
@@ -406,7 +418,13 @@ public final class NotebookDao_Impl implements NotebookDao {
             _tmpCreatedAt = _cursor.getLong(_cursorIndexOfCreatedAt);
             final long _tmpModifiedAt;
             _tmpModifiedAt = _cursor.getLong(_cursorIndexOfModifiedAt);
-            _result = new NoteEntity(_tmpId,_tmpTitle,_tmpParentNotebookId,_tmpFolderId,_tmpSettings,_tmpCreatedAt,_tmpModifiedAt);
+            final float _tmpViewportScale;
+            _tmpViewportScale = _cursor.getFloat(_cursorIndexOfViewportScale);
+            final float _tmpViewportOffsetX;
+            _tmpViewportOffsetX = _cursor.getFloat(_cursorIndexOfViewportOffsetX);
+            final float _tmpViewportOffsetY;
+            _tmpViewportOffsetY = _cursor.getFloat(_cursorIndexOfViewportOffsetY);
+            _result = new NoteEntity(_tmpId,_tmpTitle,_tmpParentNotebookId,_tmpFolderId,_tmpSettings,_tmpCreatedAt,_tmpModifiedAt,_tmpViewportScale,_tmpViewportOffsetX,_tmpViewportOffsetY);
           } else {
             _result = null;
           }

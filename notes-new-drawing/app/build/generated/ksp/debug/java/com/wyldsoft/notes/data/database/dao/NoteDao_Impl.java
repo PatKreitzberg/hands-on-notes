@@ -53,7 +53,7 @@ public final class NoteDao_Impl implements NoteDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR ABORT INTO `notes` (`id`,`title`,`parentNotebookId`,`folderId`,`settings`,`createdAt`,`modifiedAt`) VALUES (?,?,?,?,?,?,?)";
+        return "INSERT OR ABORT INTO `notes` (`id`,`title`,`parentNotebookId`,`folderId`,`settings`,`createdAt`,`modifiedAt`,`viewportScale`,`viewportOffsetX`,`viewportOffsetY`) VALUES (?,?,?,?,?,?,?,?,?,?)";
       }
 
       @Override
@@ -74,6 +74,9 @@ public final class NoteDao_Impl implements NoteDao {
         statement.bindString(5, entity.getSettings());
         statement.bindLong(6, entity.getCreatedAt());
         statement.bindLong(7, entity.getModifiedAt());
+        statement.bindDouble(8, entity.getViewportScale());
+        statement.bindDouble(9, entity.getViewportOffsetX());
+        statement.bindDouble(10, entity.getViewportOffsetY());
       }
     };
     this.__insertionAdapterOfNoteNotebookCrossRef = new EntityInsertionAdapter<NoteNotebookCrossRef>(__db) {
@@ -121,7 +124,7 @@ public final class NoteDao_Impl implements NoteDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "UPDATE OR ABORT `notes` SET `id` = ?,`title` = ?,`parentNotebookId` = ?,`folderId` = ?,`settings` = ?,`createdAt` = ?,`modifiedAt` = ? WHERE `id` = ?";
+        return "UPDATE OR ABORT `notes` SET `id` = ?,`title` = ?,`parentNotebookId` = ?,`folderId` = ?,`settings` = ?,`createdAt` = ?,`modifiedAt` = ?,`viewportScale` = ?,`viewportOffsetX` = ?,`viewportOffsetY` = ? WHERE `id` = ?";
       }
 
       @Override
@@ -142,7 +145,10 @@ public final class NoteDao_Impl implements NoteDao {
         statement.bindString(5, entity.getSettings());
         statement.bindLong(6, entity.getCreatedAt());
         statement.bindLong(7, entity.getModifiedAt());
-        statement.bindString(8, entity.getId());
+        statement.bindDouble(8, entity.getViewportScale());
+        statement.bindDouble(9, entity.getViewportOffsetX());
+        statement.bindDouble(10, entity.getViewportOffsetY());
+        statement.bindString(11, entity.getId());
       }
     };
     this.__preparedStmtOfDeleteById = new SharedSQLiteStatement(__db) {
@@ -292,6 +298,9 @@ public final class NoteDao_Impl implements NoteDao {
           final int _cursorIndexOfSettings = CursorUtil.getColumnIndexOrThrow(_cursor, "settings");
           final int _cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "createdAt");
           final int _cursorIndexOfModifiedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "modifiedAt");
+          final int _cursorIndexOfViewportScale = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportScale");
+          final int _cursorIndexOfViewportOffsetX = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportOffsetX");
+          final int _cursorIndexOfViewportOffsetY = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportOffsetY");
           final NoteEntity _result;
           if (_cursor.moveToFirst()) {
             final String _tmpId;
@@ -316,7 +325,13 @@ public final class NoteDao_Impl implements NoteDao {
             _tmpCreatedAt = _cursor.getLong(_cursorIndexOfCreatedAt);
             final long _tmpModifiedAt;
             _tmpModifiedAt = _cursor.getLong(_cursorIndexOfModifiedAt);
-            _result = new NoteEntity(_tmpId,_tmpTitle,_tmpParentNotebookId,_tmpFolderId,_tmpSettings,_tmpCreatedAt,_tmpModifiedAt);
+            final float _tmpViewportScale;
+            _tmpViewportScale = _cursor.getFloat(_cursorIndexOfViewportScale);
+            final float _tmpViewportOffsetX;
+            _tmpViewportOffsetX = _cursor.getFloat(_cursorIndexOfViewportOffsetX);
+            final float _tmpViewportOffsetY;
+            _tmpViewportOffsetY = _cursor.getFloat(_cursorIndexOfViewportOffsetY);
+            _result = new NoteEntity(_tmpId,_tmpTitle,_tmpParentNotebookId,_tmpFolderId,_tmpSettings,_tmpCreatedAt,_tmpModifiedAt,_tmpViewportScale,_tmpViewportOffsetX,_tmpViewportOffsetY);
           } else {
             _result = null;
           }
@@ -348,6 +363,9 @@ public final class NoteDao_Impl implements NoteDao {
           final int _cursorIndexOfSettings = CursorUtil.getColumnIndexOrThrow(_cursor, "settings");
           final int _cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "createdAt");
           final int _cursorIndexOfModifiedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "modifiedAt");
+          final int _cursorIndexOfViewportScale = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportScale");
+          final int _cursorIndexOfViewportOffsetX = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportOffsetX");
+          final int _cursorIndexOfViewportOffsetY = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportOffsetY");
           final NoteEntity _result;
           if (_cursor.moveToFirst()) {
             final String _tmpId;
@@ -372,7 +390,13 @@ public final class NoteDao_Impl implements NoteDao {
             _tmpCreatedAt = _cursor.getLong(_cursorIndexOfCreatedAt);
             final long _tmpModifiedAt;
             _tmpModifiedAt = _cursor.getLong(_cursorIndexOfModifiedAt);
-            _result = new NoteEntity(_tmpId,_tmpTitle,_tmpParentNotebookId,_tmpFolderId,_tmpSettings,_tmpCreatedAt,_tmpModifiedAt);
+            final float _tmpViewportScale;
+            _tmpViewportScale = _cursor.getFloat(_cursorIndexOfViewportScale);
+            final float _tmpViewportOffsetX;
+            _tmpViewportOffsetX = _cursor.getFloat(_cursorIndexOfViewportOffsetX);
+            final float _tmpViewportOffsetY;
+            _tmpViewportOffsetY = _cursor.getFloat(_cursorIndexOfViewportOffsetY);
+            _result = new NoteEntity(_tmpId,_tmpTitle,_tmpParentNotebookId,_tmpFolderId,_tmpSettings,_tmpCreatedAt,_tmpModifiedAt,_tmpViewportScale,_tmpViewportOffsetX,_tmpViewportOffsetY);
           } else {
             _result = null;
           }
@@ -408,6 +432,9 @@ public final class NoteDao_Impl implements NoteDao {
           final int _cursorIndexOfSettings = CursorUtil.getColumnIndexOrThrow(_cursor, "settings");
           final int _cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "createdAt");
           final int _cursorIndexOfModifiedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "modifiedAt");
+          final int _cursorIndexOfViewportScale = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportScale");
+          final int _cursorIndexOfViewportOffsetX = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportOffsetX");
+          final int _cursorIndexOfViewportOffsetY = CursorUtil.getColumnIndexOrThrow(_cursor, "viewportOffsetY");
           final List<NoteEntity> _result = new ArrayList<NoteEntity>(_cursor.getCount());
           while (_cursor.moveToNext()) {
             final NoteEntity _item;
@@ -433,7 +460,13 @@ public final class NoteDao_Impl implements NoteDao {
             _tmpCreatedAt = _cursor.getLong(_cursorIndexOfCreatedAt);
             final long _tmpModifiedAt;
             _tmpModifiedAt = _cursor.getLong(_cursorIndexOfModifiedAt);
-            _item = new NoteEntity(_tmpId,_tmpTitle,_tmpParentNotebookId,_tmpFolderId,_tmpSettings,_tmpCreatedAt,_tmpModifiedAt);
+            final float _tmpViewportScale;
+            _tmpViewportScale = _cursor.getFloat(_cursorIndexOfViewportScale);
+            final float _tmpViewportOffsetX;
+            _tmpViewportOffsetX = _cursor.getFloat(_cursorIndexOfViewportOffsetX);
+            final float _tmpViewportOffsetY;
+            _tmpViewportOffsetY = _cursor.getFloat(_cursorIndexOfViewportOffsetY);
+            _item = new NoteEntity(_tmpId,_tmpTitle,_tmpParentNotebookId,_tmpFolderId,_tmpSettings,_tmpCreatedAt,_tmpModifiedAt,_tmpViewportScale,_tmpViewportOffsetX,_tmpViewportOffsetY);
             _result.add(_item);
           }
           return _result;

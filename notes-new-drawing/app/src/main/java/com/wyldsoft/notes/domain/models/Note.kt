@@ -8,7 +8,10 @@ data class Note(
     val shapes: MutableList<Shape> = mutableListOf(),
     val createdAt: Long = System.currentTimeMillis(),
     val modifiedAt: Long = System.currentTimeMillis(),
-    val template: Template? = null
+    val template: Template? = null,
+    val viewportScale: Float = 1.0f,
+    val viewportOffsetX: Float = 0f,
+    val viewportOffsetY: Float = 0f
 )
 
 data class Template(

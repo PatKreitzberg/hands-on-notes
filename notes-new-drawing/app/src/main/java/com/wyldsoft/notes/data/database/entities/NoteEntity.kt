@@ -25,5 +25,8 @@ data class NoteEntity(
     val folderId: String? = null, // For loose notes in a folder
     val settings: String = "{}", // JSON string for note settings
     val createdAt: Long = System.currentTimeMillis(),
-    val modifiedAt: Long = System.currentTimeMillis()
+    val modifiedAt: Long = System.currentTimeMillis(),
+    val viewportScale: Float = 1.0f,
+    val viewportOffsetX: Float = 0f,
+    val viewportOffsetY: Float = 0f
 )

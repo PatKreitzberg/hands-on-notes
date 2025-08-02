@@ -57,7 +57,11 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
         // Subscribe to current note changes to load existing shapes
         lifecycleScope.launch {
             viewModel?.currentNote?.collect { note ->
-                note?.let { loadShapesFromNote(it) }
+                note?.let { 
+                    loadShapesFromNote(it)
+                    // Viewport state is restored in ViewModel, just need to refresh
+                    forceScreenRefresh()
+                }
             }
         }
     }

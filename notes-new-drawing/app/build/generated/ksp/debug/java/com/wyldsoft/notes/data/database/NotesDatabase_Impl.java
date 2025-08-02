@@ -46,14 +46,14 @@ public final class NotesDatabase_Impl extends NotesDatabase {
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(1) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(2) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `folders` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `parentFolderId` TEXT, `createdAt` INTEGER NOT NULL, `modifiedAt` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`parentFolderId`) REFERENCES `folders`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )");
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_folders_parentFolderId` ON `folders` (`parentFolderId`)");
         db.execSQL("CREATE TABLE IF NOT EXISTS `notebooks` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `folderId` TEXT NOT NULL, `settings` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `modifiedAt` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`folderId`) REFERENCES `folders`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )");
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_notebooks_folderId` ON `notebooks` (`folderId`)");
-        db.execSQL("CREATE TABLE IF NOT EXISTS `notes` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `parentNotebookId` TEXT, `folderId` TEXT, `settings` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `modifiedAt` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`parentNotebookId`) REFERENCES `notebooks`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `notes` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `parentNotebookId` TEXT, `folderId` TEXT, `settings` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `modifiedAt` INTEGER NOT NULL, `viewportScale` REAL NOT NULL, `viewportOffsetX` REAL NOT NULL, `viewportOffsetY` REAL NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`parentNotebookId`) REFERENCES `notebooks`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )");
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_notes_parentNotebookId` ON `notes` (`parentNotebookId`)");
         db.execSQL("CREATE TABLE IF NOT EXISTS `note_notebook_cross_ref` (`noteId` TEXT NOT NULL, `notebookId` TEXT NOT NULL, PRIMARY KEY(`noteId`, `notebookId`), FOREIGN KEY(`noteId`) REFERENCES `notes`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`notebookId`) REFERENCES `notebooks`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )");
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_note_notebook_cross_ref_noteId` ON `note_notebook_cross_ref` (`noteId`)");
@@ -61,7 +61,7 @@ public final class NotesDatabase_Impl extends NotesDatabase {
         db.execSQL("CREATE TABLE IF NOT EXISTS `shapes` (`id` TEXT NOT NULL, `noteId` TEXT NOT NULL, `type` TEXT NOT NULL, `points` TEXT NOT NULL, `strokeWidth` REAL NOT NULL, `strokeColor` INTEGER NOT NULL, `pressure` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`noteId`) REFERENCES `notes`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )");
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_shapes_noteId` ON `shapes` (`noteId`)");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ee28d9e268f896cb7ce47d1a29196a5f')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '756537811bdc4840ecf0dee01164ffab')");
       }
 
       @Override
@@ -150,7 +150,7 @@ public final class NotesDatabase_Impl extends NotesDatabase {
                   + " Expected:\n" + _infoNotebooks + "\n"
                   + " Found:\n" + _existingNotebooks);
         }
-        final HashMap<String, TableInfo.Column> _columnsNotes = new HashMap<String, TableInfo.Column>(7);
+        final HashMap<String, TableInfo.Column> _columnsNotes = new HashMap<String, TableInfo.Column>(10);
         _columnsNotes.put("id", new TableInfo.Column("id", "TEXT", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsNotes.put("title", new TableInfo.Column("title", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsNotes.put("parentNotebookId", new TableInfo.Column("parentNotebookId", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
@@ -158,6 +158,9 @@ public final class NotesDatabase_Impl extends NotesDatabase {
         _columnsNotes.put("settings", new TableInfo.Column("settings", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsNotes.put("createdAt", new TableInfo.Column("createdAt", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsNotes.put("modifiedAt", new TableInfo.Column("modifiedAt", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsNotes.put("viewportScale", new TableInfo.Column("viewportScale", "REAL", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsNotes.put("viewportOffsetX", new TableInfo.Column("viewportOffsetX", "REAL", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsNotes.put("viewportOffsetY", new TableInfo.Column("viewportOffsetY", "REAL", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysNotes = new HashSet<TableInfo.ForeignKey>(1);
         _foreignKeysNotes.add(new TableInfo.ForeignKey("notebooks", "SET NULL", "NO ACTION", Arrays.asList("parentNotebookId"), Arrays.asList("id")));
         final HashSet<TableInfo.Index> _indicesNotes = new HashSet<TableInfo.Index>(1);
@@ -207,7 +210,7 @@ public final class NotesDatabase_Impl extends NotesDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "ee28d9e268f896cb7ce47d1a29196a5f", "0a263edee0b4e06b05c1214e95fd77a4");
+    }, "756537811bdc4840ecf0dee01164ffab", "8ff0e551c7050491886a3951239ceff5");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;

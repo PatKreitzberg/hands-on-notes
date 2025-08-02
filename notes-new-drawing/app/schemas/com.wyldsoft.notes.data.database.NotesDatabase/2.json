@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "424f18c006e9e635f93efdc2b679c90b",
+    "identityHash": "756537811bdc4840ecf0dee01164ffab",
     "entities": [
       {
         "tableName": "folders",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `parentFolderId` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `parentFolderId` TEXT, `createdAt` INTEGER NOT NULL, `modifiedAt` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`parentFolderId`) REFERENCES `folders`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -33,8 +33,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "updatedAt",
-            "columnName": "updatedAt",
+            "fieldPath": "modifiedAt",
+            "columnName": "modifiedAt",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -45,12 +45,34 @@
             "id"
           ]
         },
-        "indices": [],
-        "foreignKeys": []
+        "indices": [
+          {
+            "name": "index_folders_parentFolderId",
+            "unique": false,
+            "columnNames": [
+              "parentFolderId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_folders_parentFolderId` ON `${TABLE_NAME}` (`parentFolderId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "folders",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "parentFolderId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       },
       {
         "tableName": "notebooks",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `folderId` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`folderId`) REFERENCES `folders`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `folderId` TEXT NOT NULL, `settings` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `modifiedAt` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`folderId`) REFERENCES `folders`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -71,14 +93,20 @@
             "notNull": true
           },
           {
+            "fieldPath": "settings",
+            "columnName": "settings",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "createdAt",
             "columnName": "createdAt",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "updatedAt",
-            "columnName": "updatedAt",
+            "fieldPath": "modifiedAt",
+            "columnName": "modifiedAt",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -89,7 +117,17 @@
             "id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_notebooks_folderId",
+            "unique": false,
+            "columnNames": [
+              "folderId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_notebooks_folderId` ON `${TABLE_NAME}` (`folderId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "folders",
@@ -106,7 +144,7 @@
       },
       {
         "tableName": "notes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `parentNotebookId` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `isPaginationEnabled` INTEGER NOT NULL, `paperSize` TEXT NOT NULL, `orientation` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`parentNotebookId`) REFERENCES `notebooks`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `parentNotebookId` TEXT, `folderId` TEXT, `settings` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `modifiedAt` INTEGER NOT NULL, `viewportScale` REAL NOT NULL, `viewportOffsetX` REAL NOT NULL, `viewportOffsetY` REAL NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`parentNotebookId`) REFERENCES `notebooks`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
         "fields": [
           {
             "fieldPath": "id",
@@ -127,33 +165,45 @@
             "notNull": false
           },
           {
+            "fieldPath": "folderId",
+            "columnName": "folderId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "settings",
+            "columnName": "settings",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "createdAt",
             "columnName": "createdAt",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "updatedAt",
-            "columnName": "updatedAt",
+            "fieldPath": "modifiedAt",
+            "columnName": "modifiedAt",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "isPaginationEnabled",
-            "columnName": "isPaginationEnabled",
-            "affinity": "INTEGER",
+            "fieldPath": "viewportScale",
+            "columnName": "viewportScale",
+            "affinity": "REAL",
             "notNull": true
           },
           {
-            "fieldPath": "paperSize",
-            "columnName": "paperSize",
-            "affinity": "TEXT",
+            "fieldPath": "viewportOffsetX",
+            "columnName": "viewportOffsetX",
+            "affinity": "REAL",
             "notNull": true
           },
           {
-            "fieldPath": "orientation",
-            "columnName": "orientation",
-            "affinity": "TEXT",
+            "fieldPath": "viewportOffsetY",
+            "columnName": "viewportOffsetY",
+            "affinity": "REAL",
             "notNull": true
           }
         ],
@@ -163,7 +213,17 @@
             "id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_notes_parentNotebookId",
+            "unique": false,
+            "columnNames": [
+              "parentNotebookId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_notes_parentNotebookId` ON `${TABLE_NAME}` (`parentNotebookId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "notebooks",
@@ -202,7 +262,26 @@
             "notebookId"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_note_notebook_cross_ref_noteId",
+            "unique": false,
+            "columnNames": [
+              "noteId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_note_notebook_cross_ref_noteId` ON `${TABLE_NAME}` (`noteId`)"
+          },
+          {
+            "name": "index_note_notebook_cross_ref_notebookId",
+            "unique": false,
+            "columnNames": [
+              "notebookId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_note_notebook_cross_ref_notebookId` ON `${TABLE_NAME}` (`notebookId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "notes",
@@ -230,7 +309,7 @@
       },
       {
         "tableName": "shapes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `noteId` TEXT NOT NULL, `type` TEXT NOT NULL, `data` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`noteId`) REFERENCES `notes`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `noteId` TEXT NOT NULL, `type` TEXT NOT NULL, `points` TEXT NOT NULL, `strokeWidth` REAL NOT NULL, `strokeColor` INTEGER NOT NULL, `pressure` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`noteId`) REFERENCES `notes`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -251,14 +330,32 @@
             "notNull": true
           },
           {
-            "fieldPath": "data",
-            "columnName": "data",
+            "fieldPath": "points",
+            "columnName": "points",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "createdAt",
-            "columnName": "createdAt",
+            "fieldPath": "strokeWidth",
+            "columnName": "strokeWidth",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "strokeColor",
+            "columnName": "strokeColor",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pressure",
+            "columnName": "pressure",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -269,7 +366,17 @@
             "id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_shapes_noteId",
+            "unique": false,
+            "columnNames": [
+              "noteId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_shapes_noteId` ON `${TABLE_NAME}` (`noteId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "notes",
@@ -288,7 +395,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '424f18c006e9e635f93efdc2b679c90b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '756537811bdc4840ecf0dee01164ffab')"
     ]
   }
 }

@@ -19,6 +19,7 @@ interface NoteRepository {
     suspend fun createNewNote(): Note
     suspend fun setCurrentNote(noteId: String)
     fun getNoteFlow(noteId: String): Flow<Note?>
+    suspend fun updateViewportState(noteId: String, scale: Float, offsetX: Float, offsetY: Float)
 }
 
 class NoteRepositoryImpl(
@@ -94,6 +95,17 @@ class NoteRepositoryImpl(
         _currentNote.value = getNote(noteId)
     }
     
+    override suspend fun updateViewportState(noteId: String, scale: Float, offsetX: Float, offsetY: Float) {
+        val note = getNote(noteId) ?: return
+        val updatedNote = note.copy(
+            viewportScale = scale,
+            viewportOffsetX = offsetX,
+            viewportOffsetY = offsetY,
+            modifiedAt = System.currentTimeMillis()
+        )
+        saveNote(updatedNote)
+    }
+    
     // Extension functions for converting between domain models and entities
     private fun NoteEntity.toNote(shapes: List<ShapeEntity>): Note {
         return Note(
@@ -101,7 +113,10 @@ class NoteRepositoryImpl(
             title = title,
             shapes = shapes.map { it.toShape() }.toMutableList(),
             createdAt = createdAt,
-            modifiedAt = modifiedAt
+            modifiedAt = modifiedAt,
+            viewportScale = viewportScale,
+            viewportOffsetX = viewportOffsetX,
+            viewportOffsetY = viewportOffsetY
         )
     }
     
@@ -110,7 +125,10 @@ class NoteRepositoryImpl(
             id = id,
             title = title,
             createdAt = createdAt,
-            modifiedAt = modifiedAt
+            modifiedAt = modifiedAt,
+            viewportScale = viewportScale,
+            viewportOffsetX = viewportOffsetX,
+            viewportOffsetY = viewportOffsetY
         )
     }
     
