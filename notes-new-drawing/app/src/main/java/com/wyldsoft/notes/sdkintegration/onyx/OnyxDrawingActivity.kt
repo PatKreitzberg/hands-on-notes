@@ -75,7 +75,22 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
         
         // Set touch listener on the surface view to capture gestures
         surfaceView.setOnTouchListener { _, event ->
-            gestureHandler?.onTouchEvent(event) ?: false
+            // Check if any pointer is a stylus
+            var hasStylus = false
+            for (i in 0 until event.pointerCount) {
+                if (event.getToolType(i) == MotionEvent.TOOL_TYPE_STYLUS) {
+                    hasStylus = true
+                    break
+                }
+            }
+            
+            // Only handle events if no stylus is detected
+            if (!hasStylus) {
+                gestureHandler?.onTouchEvent(event) ?: false
+            } else {
+                Log.d(TAG, "Stylus detected, ignoring gesture handling")
+                false // Let Onyx SDK handle stylus events
+            }
         }
     }
 
