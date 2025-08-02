@@ -17,7 +17,7 @@ import kotlin.math.sqrt
 class GestureHandler(
     context: Context, 
     private val view: View,
-    private val viewportManager: ViewportManager? = null
+    private var viewportManager: ViewportManager? = null
 ) {
     companion object {
         private const val TAG = "GestureHandler"
@@ -96,7 +96,12 @@ class GestureHandler(
                 pinchCenterY = detector.focusY
                 
                 // Update viewport with scale change
-                viewportManager?.updateScale(detector.scaleFactor, pinchCenterX, pinchCenterY)
+                if (viewportManager != null) {
+                    viewportManager?.updateScale(detector.scaleFactor, pinchCenterX, pinchCenterY)
+                    Log.d(TAG, "ViewportManager.updateScale called successfully")
+                } else {
+                    Log.w(TAG, "ViewportManager is null - cannot update scale!")
+                }
                 
                 // Trigger view refresh
                 (view.context as? com.wyldsoft.notes.drawing.DrawingActivityInterface)?.forceScreenRefresh()
@@ -203,6 +208,7 @@ class GestureHandler(
         }
         
         if (isPanning) {
+            Log.d(TAG, "Pan/Scroll gesture in progress - Delta: ($deltaX, $deltaY), Distance: $distance")
             val currentDeltaX = x - (panStartX + totalPanX)
             val currentDeltaY = y - (panStartY + totalPanY)
             
@@ -210,7 +216,13 @@ class GestureHandler(
             totalPanY += currentDeltaY
             
             // Update viewport with pan offset
-            viewportManager?.updateOffset(currentDeltaX, currentDeltaY)
+            Log.d(TAG, "Updating viewport with pan offset: ($currentDeltaX, $currentDeltaY)")
+            if (viewportManager != null) {
+                viewportManager?.updateOffset(currentDeltaX, currentDeltaY)
+                Log.d(TAG, "ViewportManager.updateOffset called successfully")
+            } else {
+                Log.w(TAG, "ViewportManager is null - cannot update offset!")
+            }
             
             // Trigger view refresh
             (view.context as? com.wyldsoft.notes.drawing.DrawingActivityInterface)?.forceScreenRefresh()
@@ -311,5 +323,10 @@ class GestureHandler(
         tapRunnable?.let {
             tapHandler.removeCallbacks(it)
         }
+    }
+    
+    fun setViewportManager(viewportManager: ViewportManager?) {
+        this.viewportManager = viewportManager
+        Log.d(TAG, "ViewportManager set: ${viewportManager != null}")
     }
 }

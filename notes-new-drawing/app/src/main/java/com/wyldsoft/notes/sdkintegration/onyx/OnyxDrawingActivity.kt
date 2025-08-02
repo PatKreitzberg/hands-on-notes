@@ -1,5 +1,6 @@
 package com.wyldsoft.notes.sdkintegration.onyx
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -29,6 +30,7 @@ import com.wyldsoft.notes.gestures.GestureHandler
 import android.view.MotionEvent
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import com.wyldsoft.notes.presentation.viewmodel.EditorViewModel
 
 
 open class OnyxDrawingActivity : BaseDrawingActivity() {
@@ -66,12 +68,13 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun createTouchHelper(surfaceView: SurfaceView) {
         val callback = createOnyxCallback()
         onyxTouchHelper = TouchHelper.create(surfaceView, callback)
         
-        // Initialize gesture handler with viewport manager
-        gestureHandler = GestureHandler(this, surfaceView, viewModel?.viewportManager)
+        // Initialize gesture handler (viewportManager will be set later when viewModel is available)
+        gestureHandler = GestureHandler(this, surfaceView)
         
         // Set touch listener on the surface view to capture gestures
         surfaceView.setOnTouchListener { _, event ->
@@ -211,6 +214,13 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
             recreateBitmapFromShapes()
             bitmap?.let { renderToScreen(sv, it) }
         }
+    }
+    
+    override fun setViewModel(viewModel: EditorViewModel) {
+        super.setViewModel(viewModel)
+        // Update gesture handler with viewport manager now that it's available
+        gestureHandler?.setViewportManager(viewModel.viewportManager)
+        Log.d(TAG, "Updated GestureHandler with ViewportManager")
     }
 
     private fun getRxManager(): RxManager {
