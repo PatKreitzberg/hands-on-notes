@@ -27,6 +27,8 @@ import com.wyldsoft.notes.shapemanagement.EraseManager
 import com.wyldsoft.notes.refreshingscreen.PartialEraseRefresh
 import com.wyldsoft.notes.gestures.GestureHandler
 import android.view.MotionEvent
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 
 open class OnyxDrawingActivity : BaseDrawingActivity() {
@@ -51,6 +53,13 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
         // Onyx-specific initialization
         // Initialize renderer helper
         rendererHelper = RendererHelper()
+        
+        // Subscribe to current note changes to load existing shapes
+        lifecycleScope.launch {
+            viewModel?.currentNote?.collect { note ->
+                note?.let { loadShapesFromNote(it) }
+            }
+        }
     }
 
     override fun createTouchHelper(surfaceView: SurfaceView) {
@@ -435,5 +444,46 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
             bitmapCanvas = null
             cleanSurfaceView(sv)
         }
+    }
+    
+    // Load shapes from note into the drawing
+    private fun loadShapesFromNote(note: com.wyldsoft.notes.domain.models.Note) {
+        // Clear existing shapes
+        drawnShapes.clear()
+        
+        // Convert domain shapes to SDK shapes
+        for (domainShape in note.shapes) {
+            val sdkShape = convertDomainShapeToSdkShape(domainShape)
+            drawnShapes.add(sdkShape)
+        }
+        
+        // Recreate bitmap with all shapes
+        forceScreenRefresh()
+    }
+    
+    // Convert domain model shape to Onyx SDK shape
+    private fun convertDomainShapeToSdkShape(domainShape: com.wyldsoft.notes.domain.models.Shape): Shape {
+        // Create TouchPointList from domain shape points
+        val touchPointList = TouchPointList()
+        for (i in domainShape.points.indices) {
+            val point = domainShape.points[i]
+            val pressure = if (i < domainShape.pressure.size) domainShape.pressure[i] else 0.5f
+            val touchPoint = TouchPoint(point.x, point.y, pressure, 1f, System.currentTimeMillis())
+            touchPointList.add(touchPoint)
+        }
+        
+        // Map shape type - for now assuming all are strokes
+        val shapeType = ShapeFactory.SHAPE_PENCIL_SCRIBBLE
+        
+        val shape = ShapeFactory.createShape(shapeType)
+        shape.setTouchPointList(touchPointList)
+            .setStrokeColor(domainShape.strokeColor)
+            .setStrokeWidth(domainShape.strokeWidth)
+            .setShapeType(shapeType)
+            
+        // Update bounding rect for hit testing
+        shape.updateShapeRect()
+        
+        return shape
     }
 }
