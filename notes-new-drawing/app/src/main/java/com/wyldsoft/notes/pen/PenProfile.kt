@@ -3,8 +3,6 @@ package com.wyldsoft.notes.pen
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 
-import com.wyldsoft.notes.sdkintegration.SDKType
-
 data class PenProfile(
     val strokeWidth: Float,
     var penType: PenType, // Made mutable to allow pen type switching
@@ -46,26 +44,7 @@ data class PenProfile(
 
     fun getColorAsInt(): Int = strokeColor.toArgb()
 
-    // Create a copy with different properties
-    fun withPenType(newPenType: PenType): PenProfile = copy(penType = newPenType)
-    fun withColor(newColor: Color): PenProfile = copy(strokeColor = newColor)
-    fun withStrokeWidth(newWidth: Float): PenProfile = copy(strokeWidth = newWidth)
-
-    // Legacy method for backward compatibility
-    @Deprecated("Use getStrokeStyleForSDK instead", ReplaceWith("getStrokeStyleForSDK(SDKType.ONYX)"))
-    fun getOnyxStrokeStyle(): Int = getStrokeStyleForSDK(SDKType.ONYX)
-
-    // SDK-agnostic method
-    fun getStrokeStyleForSDK(sdkType: SDKType): Int {
-        return when (sdkType) {
-            SDKType.ONYX -> getOnyxStrokeStyleInternal()
-            SDKType.HUION -> getHuionStrokeStyle()
-            SDKType.WACOM -> getWacomStrokeStyle()
-            SDKType.GENERIC -> 0
-        }
-    }
-
-    private fun getOnyxStrokeStyleInternal(): Int {
+    internal fun getOnyxStrokeStyleInternal(): Int {
         return when (penType) {
             PenType.BALLPEN -> 0
             PenType.FOUNTAIN -> 1
@@ -75,32 +54,6 @@ data class PenProfile(
             PenType.CHARCOAL_V2 -> 5
             PenType.NEO_BRUSH -> 6
             PenType.DASH -> 7
-        }
-    }
-
-    private fun getHuionStrokeStyle(): Int {
-        return when (penType) {
-            PenType.BALLPEN -> 0
-            PenType.FOUNTAIN -> 1
-            PenType.MARKER -> 2
-            PenType.PENCIL -> 3
-            PenType.CHARCOAL -> 4
-            PenType.CHARCOAL_V2 -> 4
-            PenType.NEO_BRUSH -> 5
-            PenType.DASH -> 0
-        }
-    }
-
-    private fun getWacomStrokeStyle(): Int {
-        return when (penType) {
-            PenType.BALLPEN -> 1
-            PenType.FOUNTAIN -> 2
-            PenType.MARKER -> 3
-            PenType.PENCIL -> 0
-            PenType.CHARCOAL -> 4
-            PenType.CHARCOAL_V2 -> 4
-            PenType.NEO_BRUSH -> 5
-            PenType.DASH -> 1
         }
     }
 }

@@ -4,8 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.Log
@@ -113,7 +111,7 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
                 .setLimitRect(limit, ArrayList(excludeRects))
                 .openRawDrawing()
 
-            helper.setStrokeStyle(currentPenProfile.getOnyxStrokeStyle())
+            helper.setStrokeStyle(currentPenProfile.getOnyxStrokeStyleInternal())
             helper.setRawDrawingEnabled(true)
             helper.setRawDrawingRenderEnabled(true)
         }
@@ -131,7 +129,7 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
             helper.setStrokeWidth(currentPenProfile.strokeWidth)
                 .setLimitRect(limit, ArrayList(excludeRects))
                 .openRawDrawing()
-            helper.setStrokeStyle(currentPenProfile.getOnyxStrokeStyle())
+            helper.setStrokeStyle(currentPenProfile.getOnyxStrokeStyleInternal())
 
             helper.setRawDrawingEnabled(true)
             helper.setRawDrawingRenderEnabled(true)
