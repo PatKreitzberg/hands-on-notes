@@ -5,21 +5,24 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import com.wyldsoft.notes.editor.EditorState
+import com.wyldsoft.notes.presentation.viewmodel.EditorViewModel
 
 @Composable
 fun DrawingCanvas(
-    editorState: EditorState,
+    viewModel: EditorViewModel,
     onSurfaceViewCreated: (SurfaceView) -> Unit
 ) {
+    val refreshTrigger by viewModel.refreshUi.collectAsState()
+    
     AndroidView(
         factory = { context ->
             SurfaceView(context).apply {
-                // Surface will be configured by the activity
                 onSurfaceViewCreated(this)
             }
         },
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        update = { view ->
+            // Force recomposition when refresh is triggered
+        }
     )
 }

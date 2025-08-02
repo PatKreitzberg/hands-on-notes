@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.Log
@@ -12,7 +13,6 @@ import com.onyx.android.sdk.data.note.TouchPoint
 import com.onyx.android.sdk.pen.TouchHelper
 import com.onyx.android.sdk.pen.data.TouchPointList
 import com.onyx.android.sdk.rx.RxManager
-import com.wyldsoft.notes.editor.EditorState
 import com.wyldsoft.notes.sdkintegration.GlobalDeviceReceiver
 import com.wyldsoft.notes.rendering.RendererToScreenRequest
 import com.wyldsoft.notes.rendering.RendererHelper
@@ -109,7 +109,7 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
             val limit = Rect()
             surfaceView?.getLocalVisibleRect(limit)
 
-            val excludeRects = EditorState.getCurrentExclusionRects()
+            val excludeRects = viewModel?.excludeRects?.value ?: emptyList()
             Log.d("ExclusionRects", "Current exclusion rects ${excludeRects.size}")
             helper.setStrokeWidth(currentPenProfile.strokeWidth)
                 .setStrokeColor(currentPenProfile.getColorAsInt())
@@ -181,14 +181,14 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
         override fun onBeginRawDrawing(b: Boolean, touchPoint: TouchPoint?) {
             isDrawingInProgress = true
             disableFingerTouch()
-            EditorState.notifyDrawingStarted()
+            viewModel?.startDrawing()
         }
 
         override fun onEndRawDrawing(b: Boolean, touchPoint: TouchPoint?) {
             isDrawingInProgress = false
             enableFingerTouch()
             forceScreenRefresh()
-            EditorState.notifyDrawingEnded()
+            viewModel?.endDrawing()
         }
 
         override fun onRawDrawingTouchPointMoveReceived(touchPoint: TouchPoint?) {
@@ -270,8 +270,17 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
             val shape = createShapeFromPenType(touchPointList)
             drawnShapes.add(shape)
 
+            // Convert TouchPointList to List<PointF> for ViewModel
+            val pointFs = mutableListOf<PointF>()
+            val pressures = mutableListOf<Float>()
+            for (i in 0 until touchPointList.size()) {
+                val tp = touchPointList.get(i)
+                pointFs.add(PointF(tp.x, tp.y))
+                pressures.add(tp.pressure)
+            }
+            onShapeCompleted(pointFs, pressures)
+
             // Render the new shape to the bitmap
-            // fixme i dont think either of next to lines do anything necessary
             renderShapeToBitmap(shape)
             renderToScreen(sv, bitmap)
         }

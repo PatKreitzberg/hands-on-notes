@@ -31,7 +31,7 @@ import com.wyldsoft.notes.utils.noRippleClickable
 
 
 @Composable
-fun UpdatedStrokeOptionsPanel(
+fun StrokeOptionsPanel(
     currentProfile: PenProfile,
     onProfileChanged: (PenProfile) -> Unit,
     onPanelPositioned: (Rect) -> Unit = {}
@@ -80,7 +80,7 @@ fun UpdatedStrokeOptionsPanel(
                     with(density) { boundingRect.bottom.toDp().value.toInt() }
                 )
 
-                println("UpdatedStrokeOptionsPanel positioned: $panelRect")
+                println("StrokeOptionsPanel positioned: $panelRect")
                 onPanelPositioned(panelRect)
             }
     ) {

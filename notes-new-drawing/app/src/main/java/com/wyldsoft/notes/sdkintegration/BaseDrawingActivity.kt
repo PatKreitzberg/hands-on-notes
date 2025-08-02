@@ -17,13 +17,19 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.graphics.createBitmap
 import com.onyx.android.sdk.pen.TouchHelper
-import com.wyldsoft.notes.editor.EditorState
 import com.wyldsoft.notes.editor.EditorView
 import com.wyldsoft.notes.pen.PenProfile
 import com.wyldsoft.notes.pen.PenType
 import com.wyldsoft.notes.ui.theme.MinimaleditorTheme
+import com.wyldsoft.notes.presentation.viewmodel.EditorViewModel
+import com.wyldsoft.notes.presentation.viewmodel.ViewModelFactory
+import com.wyldsoft.notes.data.repository.NoteRepositoryImpl
+import com.wyldsoft.notes.drawing.DrawingActivityInterface
+import android.graphics.PointF
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
-abstract class BaseDrawingActivity : ComponentActivity() {
+abstract class BaseDrawingActivity : ComponentActivity(), DrawingActivityInterface {
     protected val TAG = "BaseDrawingActivity"
 
     // Common drawing state
@@ -33,6 +39,10 @@ abstract class BaseDrawingActivity : ComponentActivity() {
     protected var surfaceView: SurfaceView? = null
     protected var isDrawingInProgress = false
     protected var currentPenProfile = PenProfile.getDefaultProfile(PenType.BALLPEN)
+    private var editorViewModel: EditorViewModel? = null
+    protected val viewModel: EditorViewModel?
+        get() = editorViewModel
+    private lateinit var viewModelFactory: ViewModelFactory
 
     // Abstract methods that must be implemented by SDK-specific classes
     abstract fun initializeSDK()
@@ -46,6 +56,10 @@ abstract class BaseDrawingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialize dependencies
+        val noteRepository = NoteRepositoryImpl()
+        viewModelFactory = ViewModelFactory(noteRepository)
+
         initializeSDK()
         initializePaint()
         initializeDeviceReceiver()
@@ -56,18 +70,14 @@ abstract class BaseDrawingActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     EditorView(
+                        viewModelFactory = viewModelFactory,
                         onSurfaceViewCreated = { sv ->
                             handleSurfaceViewCreated(sv)
-                        },
-                        onPenProfileChanged = { penProfile ->
-                            updatePenProfile(penProfile)
                         }
                     )
                 }
             }
         }
-
-        EditorState.setMainActivity(this as com.wyldsoft.notes.MainActivity)
     }
 
     open fun createTouchHelper(surfaceView: SurfaceView) { }
@@ -129,15 +139,32 @@ abstract class BaseDrawingActivity : ComponentActivity() {
         surfaceView.holder.addCallback(surfaceCallback)
     }
 
+    override fun setViewModel(viewModel: EditorViewModel) {
+        this.editorViewModel = viewModel
+        
+        // Observe pen profile changes
+        lifecycleScope.launch {
+            viewModel.currentPenProfile.collect { profile ->
+                updatePenProfile(profile)
+            }
+        }
+    }
+
+    override fun onShapeCompleted(points: List<PointF>, pressures: List<Float>) {
+        viewModel?.addShape(points, pressures)
+    }
+
     fun updatePenProfile(penProfile: PenProfile) {
         Log.d(TAG, "Updating pen profile: $penProfile")
         currentPenProfile = penProfile
         updatePaintFromProfile()
         updateTouchHelperWithProfile()
+        // Don't call viewModel?.updatePenProfile here to avoid infinite loop
     }
 
     fun updateExclusionZones(excludeRects: List<Rect>) {
         updateTouchHelperExclusionZones(excludeRects)
+        viewModel?.updateExclusionZones(excludeRects)
         println("forceScreenRefresh() from updateExclusionZone")
         //forceScreenRefresh()
     }

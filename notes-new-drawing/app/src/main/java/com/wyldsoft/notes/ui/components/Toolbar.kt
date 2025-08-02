@@ -17,91 +17,68 @@ import com.wyldsoft.notes.ExcludeRects
 import com.wyldsoft.notes.PenIconUtils
 import kotlinx.coroutines.launch
 
-import com.wyldsoft.notes.editor.EditorState
 import com.wyldsoft.notes.pen.PenProfile
+import com.wyldsoft.notes.presentation.viewmodel.EditorViewModel
 
 
 @Composable
 fun UpdatedToolbar(
-    editorState: EditorState,
-    onPenProfileChanged: (PenProfile) -> Unit = {}
+    viewModel: EditorViewModel,
+    currentPenProfile: PenProfile,
+    isStrokeOptionsOpen: Boolean
 ) {
     val scope = rememberCoroutineScope()
-    var selectedProfileIndex by remember { mutableStateOf(0) } // Default to leftmost (index 0)
-    var isStrokeSelectionOpen by remember { mutableStateOf(false) }
+    var selectedProfileIndex by remember { mutableStateOf(0) }
+    var isStrokeSelectionOpen by remember { mutableStateOf(isStrokeOptionsOpen) }
     var strokePanelRect by remember { mutableStateOf<Rect?>(null) }
-
-    // Add a flag to track if we're waiting for panel to close
-    var isPanelClosing by remember { mutableStateOf(false) }
-
-    // Add a callback for when panel is fully removed
-    var onPanelRemoved: (() -> Unit)? by remember { mutableStateOf(null) }
 
     // Store 5 profiles
     var profiles by remember {
         mutableStateOf(PenProfile.createDefaultProfiles())
     }
 
-    // Current profile
-    val currentProfile = profiles[selectedProfileIndex]
-
+    // Sync with ViewModel state
+    LaunchedEffect(isStrokeOptionsOpen) {
+        isStrokeSelectionOpen = isStrokeOptionsOpen
+    }
+    
     // Force refresh counter for debugging
-    var refreshCounter by remember { mutableStateOf(0) }
+    val refreshTrigger by viewModel.refreshUi.collectAsState()
 
     fun forceUIRefresh() {
-        refreshCounter++
-        scope.launch {
-            EditorState.refreshUi.emit(Unit)
-        }
-        Log.d("Toolbar:", "UI Refresh triggered: $refreshCounter")
+        viewModel.forceRefresh()
+        Log.d("Toolbar:", "UI Refresh triggered")
     }
 
     fun addStrokeOptionPanelRect() {
         strokePanelRect?.let { rect ->
-            editorState.stateExcludeRects[ExcludeRects.StrokeOptions] = rect
-            editorState.stateExcludeRectsModified = true
-            println("Added exclusion rect: $rect")
-
-            val excludeRects = editorState.stateExcludeRects.values.toList()
-            EditorState.updateExclusionZones(excludeRects)
+            val currentRects = viewModel.excludeRects.value.toMutableList()
+            currentRects.add(rect)
+            viewModel.updateExclusionZones(currentRects)
             forceUIRefresh()
         }
     }
 
     fun removeStrokeOptionPanelRect() {
-        editorState.stateExcludeRects.remove(ExcludeRects.StrokeOptions)
-        editorState.stateExcludeRectsModified = true
-        println("Removed exclusion rect")
-
-        val excludeRects = editorState.stateExcludeRects.values.toList()
-        EditorState.updateExclusionZones(excludeRects)
+        strokePanelRect?.let { rect ->
+            val currentRects = viewModel.excludeRects.value.toMutableList()
+            currentRects.remove(rect)
+            viewModel.updateExclusionZones(currentRects)
+        }
     }
 
     fun openStrokeOptionsPanel() {
         println("Opening stroke options panel for profile $selectedProfileIndex")
-        isStrokeSelectionOpen = true
-        isPanelClosing = false
-        onPanelRemoved = null
+        viewModel.toggleStrokeOptions()
     }
 
     fun closeStrokeOptionsPanel() {
         println("Closing stroke options panel")
-        isPanelClosing = true
-
-        // Set up the callback for after panel is removed
-        onPanelRemoved = {
-            removeStrokeOptionPanelRect()
-            forceUIRefresh()
-            scope.launch {
-                println("REFRESH: onPanelRemoved about to forceRefresh()")
-                EditorState.isStrokeOptionsOpen.emit(false)
-                EditorState.forceRefresh()
-            }
-            isPanelClosing = false
+        if (isStrokeSelectionOpen) {
+            viewModel.toggleStrokeOptions()
         }
-
-        // Trigger the panel removal
-        isStrokeSelectionOpen = false
+        removeStrokeOptionPanelRect()
+        forceUIRefresh()
     }
 
     fun handleProfileClick(profileIndex: Int) {
@@ -118,8 +95,7 @@ fun UpdatedToolbar(
             }
             selectedProfileIndex = profileIndex
             val newProfile = profiles[profileIndex]
-            onPenProfileChanged(newProfile)
-            EditorState.updatePenProfile(newProfile)
+            viewModel.updatePenProfile(newProfile)
         }
     }
 
@@ -129,61 +105,24 @@ fun UpdatedToolbar(
         profiles = updatedProfiles
 
         // Immediately apply the new profile
-        onPenProfileChanged(newProfile)
-        EditorState.updatePenProfile(newProfile)
+        viewModel.updatePenProfile(newProfile)
 
         println("Profile $selectedProfileIndex updated: $newProfile")
     }
 
     // Listen for drawing events to close panel
-    LaunchedEffect(Unit) {
-        launch {
-            EditorState.drawingStarted.collect {
-                if (isStrokeSelectionOpen) {
-                    println("Drawing started - closing stroke options panel")
-                    closeStrokeOptionsPanel()
-                }
-            }
-        }
-
-        launch {
-            EditorState.forceScreenRefresh.collect {
-                println("REFRESH: Force screen refresh requested")
-                forceUIRefresh()
-            }
-        }
-    }
-
-    // Monitor drawing state changes
-    LaunchedEffect(editorState.isDrawing) {
-        if (editorState.isDrawing && isStrokeSelectionOpen) {
-            println("REFRESH: Drawing started - closing stroke options panel")
+    val isDrawing by viewModel.isDrawing.collectAsState()
+    LaunchedEffect(isDrawing) {
+        if (isDrawing && isStrokeSelectionOpen) {
+            println("Drawing started - closing stroke options panel")
             closeStrokeOptionsPanel()
         }
     }
 
-    // Emit stroke options state changes
-    LaunchedEffect(isStrokeSelectionOpen) {
-        if (!isPanelClosing) {  // Only emit if not in the middle of closing
-            EditorState.isStrokeOptionsOpen.emit(isStrokeSelectionOpen)
-        }
-    }
-
-    // Handle exclusion rect changes
-    LaunchedEffect(editorState.stateExcludeRectsModified) {
-        if (editorState.stateExcludeRectsModified) {
-            println("Exclusion rects modified - current zones: ${editorState.stateExcludeRects.keys}")
-            editorState.stateExcludeRectsModified = false
-            if (!isPanelClosing) {  // Only refresh if not waiting for panel to close
-                forceUIRefresh()
-            }
-        }
-    }
 
     // Initialize with default profile
     LaunchedEffect(Unit) {
-        onPenProfileChanged(currentProfile)
-        EditorState.updatePenProfile(currentProfile)
+        viewModel.updatePenProfile(profiles[selectedProfileIndex])
     }
 
     Column {
@@ -212,7 +151,7 @@ fun UpdatedToolbar(
 
             // Debug info
             Text(
-                text = "Profile: ${selectedProfileIndex + 1} | ${currentProfile.penType.displayName} | Refresh: $refreshCounter",
+                text = "Profile: ${selectedProfileIndex + 1} | ${currentPenProfile.penType.displayName}",
                 color = Color.Gray,
                 fontSize = 10.sp
             )
@@ -227,20 +166,20 @@ fun UpdatedToolbar(
                     onDispose {
                         // This runs when the panel is actually removed from composition
                         println("StrokeOptionsPanel removed from composition")
-                        onPanelRemoved?.invoke()
-                        onPanelRemoved = null
+                        removeStrokeOptionPanelRect()
+                        forceUIRefresh()
                     }
                 }
 
-                UpdatedStrokeOptionsPanel(
-                    currentProfile = currentProfile,
+                StrokeOptionsPanel(
+                    currentProfile = currentPenProfile,
                     onProfileChanged = { newProfile ->
                         updateProfile(newProfile)
                     },
                     onPanelPositioned = { rect ->
                         if (rect != strokePanelRect) {
                             strokePanelRect = rect
-                            if (isStrokeSelectionOpen && !isPanelClosing) {
+                            if (isStrokeSelectionOpen) {
                                 scope.launch {
                                     addStrokeOptionPanelRect()
                                 }

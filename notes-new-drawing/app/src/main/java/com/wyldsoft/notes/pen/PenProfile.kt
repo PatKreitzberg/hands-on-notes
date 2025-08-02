@@ -10,6 +10,8 @@ data class PenProfile(
     val profileId: Int = 0 // Added profile ID for identification
 ) {
     companion object {
+        val defaultProfiles: List<PenProfile> by lazy { createDefaultProfiles() }
+        
         fun getDefaultProfile(penType: PenType, profileId: Int = 0): PenProfile {
             val defaultStrokeWidth = when (penType) {
                 PenType.BALLPEN -> 5f
