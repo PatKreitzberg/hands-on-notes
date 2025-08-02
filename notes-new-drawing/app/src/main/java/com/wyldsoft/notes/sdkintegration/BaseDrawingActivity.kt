@@ -35,6 +35,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
+import com.onyx.android.sdk.api.device.epd.EpdController
 import com.wyldsoft.notes.home.HomeView
 
 abstract class BaseDrawingActivity : ComponentActivity(), DrawingActivityInterface {
@@ -226,6 +227,7 @@ abstract class BaseDrawingActivity : ComponentActivity(), DrawingActivityInterfa
 
     override fun forceScreenRefresh() {
         Log.d("BaseDrawingActivity:", "forceScreenRefresh()")
+        EpdController.enablePost(surfaceView, 1)
         surfaceView?.let { sv ->
             cleanSurfaceView(sv)
             bitmap?.let { renderToScreen(sv, it) }

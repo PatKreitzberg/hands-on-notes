@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlin.math.max
 import kotlin.math.min
+import android.util.Log
 
 /**
  * Manages the viewport transformation between NoteCoordinates and SurfaceViewCoordinates.
@@ -41,6 +42,7 @@ class ViewportManager {
      * @param focusY The Y coordinate in SurfaceViewCoordinates to zoom around
      */
     fun updateScale(scaleFactor: Float, focusX: Float, focusY: Float) {
+        Log.d("ViewportManager", "updateScale: scaleFactor=$scaleFactor, focusX=$focusX, focusY=$focusY")
         val currentState = _viewportState.value
         val newScale = (currentState.scale * scaleFactor).coerceIn(MIN_SCALE, MAX_SCALE)
         
@@ -75,6 +77,7 @@ class ViewportManager {
      * @param deltaY The vertical distance to pan in SurfaceViewCoordinates
      */
     fun updateOffset(deltaX: Float, deltaY: Float) {
+        Log.d("ViewportManager", "updateOffset: deltaX=$deltaX, deltaY=$deltaY")
         val currentState = _viewportState.value
         val newOffsetX = currentState.offsetX + deltaX
         var newOffsetY = currentState.offsetY + deltaY
