@@ -25,6 +25,8 @@ import com.wyldsoft.notes.pen.PenType
 import androidx.core.graphics.createBitmap
 import com.wyldsoft.notes.shapemanagement.EraseManager
 import com.wyldsoft.notes.refreshingscreen.PartialEraseRefresh
+import com.wyldsoft.notes.gestures.GestureHandler
+import android.view.MotionEvent
 
 
 open class OnyxDrawingActivity : BaseDrawingActivity() {
@@ -41,6 +43,9 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
     // Erase management
     private val eraseManager = EraseManager()
     private val partialEraseRefresh = PartialEraseRefresh()
+    
+    // Gesture handler
+    private var gestureHandler: GestureHandler? = null
 
     override fun initializeSDK() {
         // Onyx-specific initialization
@@ -51,6 +56,14 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
     override fun createTouchHelper(surfaceView: SurfaceView) {
         val callback = createOnyxCallback()
         onyxTouchHelper = TouchHelper.create(surfaceView, callback)
+        
+        // Initialize gesture handler
+        gestureHandler = GestureHandler(this, surfaceView)
+        
+        // Set touch listener on the surface view to capture gestures
+        surfaceView.setOnTouchListener { _, event ->
+            gestureHandler?.onTouchEvent(event) ?: false
+        }
     }
 
     override fun createDeviceReceiver(): BaseDeviceReceiver {
@@ -95,6 +108,8 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
     override fun onCleanupSDK() {
         onyxTouchHelper?.closeRawDrawing()
         drawnShapes.clear()
+        gestureHandler?.cleanup()
+        gestureHandler = null
     }
 
     override fun updateActiveSurface() {
