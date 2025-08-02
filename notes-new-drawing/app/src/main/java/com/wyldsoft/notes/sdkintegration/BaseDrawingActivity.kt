@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.LaunchedEffect
 import androidx.core.graphics.createBitmap
 import com.onyx.android.sdk.pen.TouchHelper
 import com.wyldsoft.notes.editor.EditorView
@@ -23,11 +24,18 @@ import com.wyldsoft.notes.pen.PenType
 import com.wyldsoft.notes.ui.theme.MinimaleditorTheme
 import com.wyldsoft.notes.presentation.viewmodel.EditorViewModel
 import com.wyldsoft.notes.presentation.viewmodel.ViewModelFactory
-import com.wyldsoft.notes.data.repository.NoteRepositoryImpl
+import com.wyldsoft.notes.data.repository.*
+import com.wyldsoft.notes.data.database.NotesDatabase
 import com.wyldsoft.notes.drawing.DrawingActivityInterface
 import android.graphics.PointF
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
+import com.wyldsoft.notes.home.HomeView
 
 abstract class BaseDrawingActivity : ComponentActivity(), DrawingActivityInterface {
     protected val TAG = "BaseDrawingActivity"
@@ -56,25 +64,72 @@ abstract class BaseDrawingActivity : ComponentActivity(), DrawingActivityInterfa
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize dependencies
-        val noteRepository = NoteRepositoryImpl()
-        viewModelFactory = ViewModelFactory(noteRepository)
+        // Initialize database and repositories
+        val database = NotesDatabase.getDatabase(this)
+        val noteRepository = NoteRepositoryImpl(
+            noteDao = database.noteDao(),
+            shapeDao = database.shapeDao()
+        )
+        val folderRepository = FolderRepositoryImpl(
+            folderDao = database.folderDao()
+        )
+        val notebookRepository = NotebookRepositoryImpl(
+            notebookDao = database.notebookDao(),
+            noteDao = database.noteDao()
+        )
+        
+        viewModelFactory = ViewModelFactory(
+            noteRepository = noteRepository,
+            folderRepository = folderRepository,
+            notebookRepository = notebookRepository
+        )
 
         initializeSDK()
         initializePaint()
         initializeDeviceReceiver()
+        
         setContent {
             MinimaleditorTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    EditorView(
-                        viewModelFactory = viewModelFactory,
-                        onSurfaceViewCreated = { sv ->
-                            handleSurfaceViewCreated(sv)
+                    val navController = rememberNavController()
+                    
+                    NavHost(
+                        navController = navController,
+                        startDestination = "home"
+                    ) {
+                        composable("home") {
+                            HomeView(
+                                viewModelFactory = viewModelFactory,
+                                onNotebookSelected = { notebookId, noteId ->
+                                    navController.navigate("editor/$notebookId/$noteId")
+                                }
+                            )
                         }
-                    )
+                        
+                        composable(
+                            "editor/{notebookId}/{noteId}",
+                            arguments = listOf(
+                                navArgument("notebookId") { type = NavType.StringType },
+                                navArgument("noteId") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val noteId = backStackEntry.arguments?.getString("noteId") ?: return@composable
+                            
+                            LaunchedEffect(noteId) {
+                                noteRepository.setCurrentNote(noteId)
+                            }
+                            
+                            EditorView(
+                                viewModelFactory = viewModelFactory,
+                                onSurfaceViewCreated = { sv ->
+                                    handleSurfaceViewCreated(sv)
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
