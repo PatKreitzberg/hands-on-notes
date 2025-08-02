@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.graphics.createBitmap
+import com.onyx.android.sdk.pen.TouchHelper
 import com.wyldsoft.notes.editor.EditorState
 import com.wyldsoft.notes.editor.EditorView
 import com.wyldsoft.notes.pen.PenProfile
@@ -48,7 +49,6 @@ abstract class BaseDrawingActivity : ComponentActivity() {
         initializeSDK()
         initializePaint()
         initializeDeviceReceiver()
-
         setContent {
             MinimaleditorTheme {
                 Surface(
@@ -69,6 +69,8 @@ abstract class BaseDrawingActivity : ComponentActivity() {
 
         EditorState.setMainActivity(this as com.wyldsoft.notes.MainActivity)
     }
+
+    open fun createTouchHelper(surfaceView: SurfaceView) { }
 
     override fun onResume() {
         super.onResume()
@@ -101,6 +103,7 @@ abstract class BaseDrawingActivity : ComponentActivity() {
     private fun handleSurfaceViewCreated(sv: SurfaceView) {
         surfaceView = sv
         initializeTouchHelper(sv)
+        createTouchHelper(sv)
     }
 
     protected open fun initializeTouchHelper(surfaceView: SurfaceView) {

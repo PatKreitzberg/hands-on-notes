@@ -48,6 +48,11 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
         rendererHelper = RendererHelper()
     }
 
+    override fun createTouchHelper(surfaceView: SurfaceView) {
+        val callback = createOnyxCallback()
+        onyxTouchHelper = TouchHelper.create(surfaceView, callback)
+    }
+
     override fun createDeviceReceiver(): BaseDeviceReceiver {
         onyxDeviceReceiver = GlobalDeviceReceiver()
         return OnyxDeviceReceiverWrapper(onyxDeviceReceiver!!)
