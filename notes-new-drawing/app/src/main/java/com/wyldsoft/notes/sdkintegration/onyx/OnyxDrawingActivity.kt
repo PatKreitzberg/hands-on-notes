@@ -21,15 +21,13 @@ import com.wyldsoft.notes.rendering.RendererHelper
 import com.wyldsoft.notes.touchhandling.TouchUtils
 import com.wyldsoft.notes.sdkintegration.BaseDeviceReceiver
 import com.wyldsoft.notes.sdkintegration.BaseDrawingActivity
-import com.wyldsoft.notes.touchhandling.BaseTouchHelper
 import com.wyldsoft.notes.shapemanagement.ShapeFactory
 import com.wyldsoft.notes.shapemanagement.shapes.Shape
 import com.wyldsoft.notes.pen.PenType
 import androidx.core.graphics.createBitmap
-import com.wyldsoft.notes.touchhandling.OnyxTouchHelperWrapper
 import com.wyldsoft.notes.shapemanagement.EraseManager
 import com.wyldsoft.notes.refreshingscreen.PartialEraseRefresh
-import com.wyldsoft.notes.sdkintegration.onyx.OnyxDeviceReceiverWrapper
+
 
 open class OnyxDrawingActivity : BaseDrawingActivity() {
     private var rxManager: RxManager? = null
@@ -50,12 +48,6 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
         // Onyx-specific initialization
         // Initialize renderer helper
         rendererHelper = RendererHelper()
-    }
-
-    override fun createTouchHelper(surfaceView: SurfaceView): BaseTouchHelper {
-        val callback = createOnyxCallback()
-        onyxTouchHelper = TouchHelper.create(surfaceView, callback)
-        return OnyxTouchHelperWrapper(onyxTouchHelper!!)
     }
 
     override fun createDeviceReceiver(): BaseDeviceReceiver {

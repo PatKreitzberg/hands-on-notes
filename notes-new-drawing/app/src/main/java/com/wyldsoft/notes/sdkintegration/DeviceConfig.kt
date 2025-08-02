@@ -30,14 +30,6 @@ class DeviceConfig private constructor(context: Context) {
             prefs.edit().remove("force_sdk_type").apply()
         }
 
-    fun getCurrentSDKType(context: Context): SDKType {
-        return forceSDKType ?: run {
-            val detected = SDKDetector.detectSDKType(context)
-            detectedSDKType = detected
-            detected
-        }
-    }
-
     // Performance settings
     var enableOptimizedRendering: Boolean
         get() = prefs.getBoolean("optimized_rendering", true)

@@ -18,14 +18,6 @@ import java.util.List;
 public abstract class BaseRenderer implements Renderer {
 
     @Override
-    public void onDeactivate(SurfaceView surfaceView) {
-    }
-
-    @Override
-    public void onActive(SurfaceView surfaceView) {
-    }
-
-    @Override
     public void renderToBitmap(SurfaceView surfaceView, RendererHelper.RenderContext renderContext) {
     }
 

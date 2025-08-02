@@ -16,8 +16,4 @@ class ScreenRefreshManager(
             bitmap?.let { renderToScreen(sv, it) }
         }
     }
-
-    fun refreshWithBitmap(surfaceView: SurfaceView, bitmap: Bitmap) {
-        renderToScreen(surfaceView, bitmap)
-    }
 }

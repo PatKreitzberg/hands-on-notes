@@ -23,8 +23,4 @@ public interface Renderer {
 
     void renderToScreen(final SurfaceView surfaceView,
                         RendererHelper.RenderContext renderContext);
-
-    void onDeactivate(final SurfaceView surfaceView);
-
-    void onActive(final SurfaceView surfaceView);
 }

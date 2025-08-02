@@ -20,7 +20,6 @@ import com.wyldsoft.notes.editor.EditorState
 import com.wyldsoft.notes.editor.EditorView
 import com.wyldsoft.notes.pen.PenProfile
 import com.wyldsoft.notes.pen.PenType
-import com.wyldsoft.notes.touchhandling.BaseTouchHelper
 import com.wyldsoft.notes.ui.theme.MinimaleditorTheme
 
 abstract class BaseDrawingActivity : ComponentActivity() {
@@ -36,7 +35,6 @@ abstract class BaseDrawingActivity : ComponentActivity() {
 
     // Abstract methods that must be implemented by SDK-specific classes
     abstract fun initializeSDK()
-    abstract fun createTouchHelper(surfaceView: SurfaceView): BaseTouchHelper
     abstract fun createDeviceReceiver(): BaseDeviceReceiver
     abstract fun enableFingerTouch()
     abstract fun disableFingerTouch()
@@ -106,8 +104,6 @@ abstract class BaseDrawingActivity : ComponentActivity() {
     }
 
     protected open fun initializeTouchHelper(surfaceView: SurfaceView) {
-        val touchHelper = createTouchHelper(surfaceView)
-
         surfaceView.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             updateActiveSurface()
         }
