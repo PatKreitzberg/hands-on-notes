@@ -224,7 +224,7 @@ abstract class BaseDrawingActivity : ComponentActivity(), DrawingActivityInterfa
         //forceScreenRefresh()
     }
 
-    protected open fun forceScreenRefresh() {
+    override fun forceScreenRefresh() {
         Log.d("BaseDrawingActivity:", "forceScreenRefresh()")
         surfaceView?.let { sv ->
             cleanSurfaceView(sv)

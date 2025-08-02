@@ -9,11 +9,16 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.VelocityTracker
 import android.view.View
+import com.wyldsoft.notes.viewport.ViewportManager
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
-class GestureHandler(context: Context, private val view: View) {
+class GestureHandler(
+    context: Context, 
+    private val view: View,
+    private val viewportManager: ViewportManager? = null
+) {
     companion object {
         private const val TAG = "GestureHandler"
         
@@ -89,6 +94,12 @@ class GestureHandler(context: Context, private val view: View) {
                 currentScale *= detector.scaleFactor
                 pinchCenterX = detector.focusX
                 pinchCenterY = detector.focusY
+                
+                // Update viewport with scale change
+                viewportManager?.updateScale(detector.scaleFactor, pinchCenterX, pinchCenterY)
+                
+                // Trigger view refresh
+                (view.context as? com.wyldsoft.notes.drawing.DrawingActivityInterface)?.forceScreenRefresh()
                 
                 if (currentScale > 1f) {
                     Log.d(TAG, "Pinch EXPAND - Scale: $currentScale, Center: ($pinchCenterX, $pinchCenterY)")
@@ -192,8 +203,17 @@ class GestureHandler(context: Context, private val view: View) {
         }
         
         if (isPanning) {
-            totalPanX += x - (panStartX + totalPanX)
-            totalPanY += y - (panStartY + totalPanY)
+            val currentDeltaX = x - (panStartX + totalPanX)
+            val currentDeltaY = y - (panStartY + totalPanY)
+            
+            totalPanX += currentDeltaX
+            totalPanY += currentDeltaY
+            
+            // Update viewport with pan offset
+            viewportManager?.updateOffset(currentDeltaX, currentDeltaY)
+            
+            // Trigger view refresh
+            (view.context as? com.wyldsoft.notes.drawing.DrawingActivityInterface)?.forceScreenRefresh()
             
             val direction = getDirection(totalPanX, totalPanY)
             Log.d(TAG, "Pan/Scroll - Direction: $direction, Distance: ${sqrt(totalPanX * totalPanX + totalPanY * totalPanY)}, Delta: ($totalPanX, $totalPanY)")

@@ -57,8 +57,8 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
         val callback = createOnyxCallback()
         onyxTouchHelper = TouchHelper.create(surfaceView, callback)
         
-        // Initialize gesture handler
-        gestureHandler = GestureHandler(this, surfaceView)
+        // Initialize gesture handler with viewport manager
+        gestureHandler = GestureHandler(this, surfaceView, viewModel?.viewportManager)
         
         // Set touch listener on the surface view to capture gestures
         surfaceView.setOnTouchListener { _, event ->
@@ -281,15 +281,43 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
         surfaceView?.let { sv ->
             createDrawingBitmap()
 
-            // Create and store the shape based on current pen type
+            // Create shape with original touch points (in SurfaceViewCoordinates)
             val shape = createShapeFromPenType(touchPointList)
-            drawnShapes.add(shape)
-
-            // Convert TouchPointList to List<PointF> for ViewModel
-            val pointFs = mutableListOf<PointF>()
-            val pressures = mutableListOf<Float>()
+            
+            // Convert touch points to NoteCoordinates for storage
+            val notePointList = TouchPointList()
+            val viewportManager = viewModel?.viewportManager
+            
             for (i in 0 until touchPointList.size()) {
                 val tp = touchPointList.get(i)
+                if (viewportManager != null) {
+                    // Convert from SurfaceViewCoordinates to NoteCoordinates
+                    val notePoint = viewportManager.surfaceToNoteCoordinates(tp.x, tp.y)
+                    val noteTouchPoint = TouchPoint(
+                        notePoint.x, 
+                        notePoint.y, 
+                        tp.pressure, 
+                        tp.size, 
+                        tp.timestamp
+                    )
+                    notePointList.add(noteTouchPoint)
+                } else {
+                    // If no viewport manager, use original coordinates
+                    notePointList.add(tp)
+                }
+            }
+            
+            // Update shape with note coordinates
+            shape.setTouchPointList(notePointList)
+            shape.updateShapeRect()
+            
+            drawnShapes.add(shape)
+
+            // Convert TouchPointList to List<PointF> for ViewModel (in NoteCoordinates)
+            val pointFs = mutableListOf<PointF>()
+            val pressures = mutableListOf<Float>()
+            for (i in 0 until notePointList.size()) {
+                val tp = notePointList.get(i)
                 pointFs.add(PointF(tp.x, tp.y))
                 pressures.add(tp.pressure)
             }
@@ -335,8 +363,16 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
     private fun renderShapeToBitmap(shape: Shape) {
         bitmap?.let { bmp ->
             val renderContext = rendererHelper?.getRenderContext() ?: return
+            val canvas = Canvas(bmp)
+            
+            // Apply viewport transformation if available
+            canvas.save()
+            viewModel?.viewportManager?.let { viewportManager ->
+                canvas.concat(viewportManager.getTransformMatrix())
+            }
+            
             renderContext.bitmap = bmp
-            renderContext.canvas = Canvas(bmp)
+            renderContext.canvas = canvas
             renderContext.paint = Paint().apply {
                 isAntiAlias = true
                 style = Paint.Style.STROKE
@@ -347,6 +383,7 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
             renderContext.viewPoint = android.graphics.Point(0, 0)
 
             shape.render(renderContext)
+            canvas.restore()
         }
     }
 
@@ -361,7 +398,16 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
             // Get render context
             val renderContext = rendererHelper?.getRenderContext() ?: return
             renderContext.bitmap = bitmap
-            renderContext.canvas = bitmapCanvas!!
+            
+            val canvas = bitmapCanvas!!
+            
+            // Apply viewport transformation if available
+            canvas.save()
+            viewModel?.viewportManager?.let { viewportManager ->
+                canvas.concat(viewportManager.getTransformMatrix())
+            }
+            
+            renderContext.canvas = canvas
             renderContext.paint = Paint().apply {
                 isAntiAlias = true
                 style = Paint.Style.STROKE
@@ -375,6 +421,8 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
             for (shape in drawnShapes) {
                 shape.render(renderContext)
             }
+            
+            canvas.restore()
         }
     }
 

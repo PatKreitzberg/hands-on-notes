@@ -1,14 +1,18 @@
 package com.wyldsoft.notes.drawing
 
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PointF
 import com.wyldsoft.notes.domain.models.Shape
 import com.wyldsoft.notes.domain.models.ShapeType
 import com.wyldsoft.notes.pen.PenProfile
+import com.wyldsoft.notes.viewport.ViewportManager
 
-class DrawingManager {
+class DrawingManager(
+    private val viewportManager: ViewportManager? = null
+) {
     private val paint = Paint().apply {
         isAntiAlias = true
         style = Paint.Style.STROKE
@@ -20,6 +24,12 @@ class DrawingManager {
         paint.color = shape.strokeColor
         paint.strokeWidth = shape.strokeWidth
         
+        // Apply viewport transformation if available
+        canvas.save()
+        viewportManager?.let { vm ->
+            canvas.concat(vm.getTransformMatrix())
+        }
+        
         when (shape.type) {
             ShapeType.STROKE -> drawStroke(canvas, shape)
             ShapeType.RECTANGLE -> drawRectangle(canvas, shape)
@@ -27,6 +37,8 @@ class DrawingManager {
             ShapeType.TRIANGLE -> drawTriangle(canvas, shape)
             ShapeType.LINE -> drawLine(canvas, shape)
         }
+        
+        canvas.restore()
     }
     
     private fun drawStroke(canvas: Canvas, shape: Shape) {

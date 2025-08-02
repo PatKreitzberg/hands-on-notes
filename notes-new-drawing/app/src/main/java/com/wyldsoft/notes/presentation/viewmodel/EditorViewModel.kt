@@ -8,6 +8,7 @@ import com.wyldsoft.notes.data.repository.NoteRepository
 import com.wyldsoft.notes.domain.models.Shape
 import com.wyldsoft.notes.domain.models.ShapeType
 import com.wyldsoft.notes.pen.PenProfile
+import com.wyldsoft.notes.viewport.ViewportManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,6 +34,10 @@ class EditorViewModel(
     
     private val _excludeRects = MutableStateFlow<List<Rect>>(emptyList())
     val excludeRects: StateFlow<List<Rect>> = _excludeRects.asStateFlow()
+    
+    // Viewport manager for coordinate transformations
+    val viewportManager = ViewportManager()
+    val viewportState = viewportManager.viewportState
     
     init {
         viewModelScope.launch {
