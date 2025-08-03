@@ -29,6 +29,7 @@ import com.wyldsoft.notes.refreshingscreen.PartialEraseRefresh
 import com.wyldsoft.notes.gestures.GestureHandler
 import android.view.MotionEvent
 import androidx.lifecycle.lifecycleScope
+import com.onyx.android.sdk.api.device.epd.EpdController
 import kotlinx.coroutines.launch
 import com.wyldsoft.notes.presentation.viewmodel.EditorViewModel
 
@@ -208,6 +209,7 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
 
     override fun forceScreenRefresh() {
         Log.d("Onyx", "forceScreenRefresh() called")
+        EpdController.enablePost(surfaceView, 1) // this is absolutely necessary to ensure the screen refreshes properly
         surfaceView?.let { sv ->
             cleanSurfaceView(sv)
             // Recreate bitmap from all stored shapes
