@@ -188,7 +188,7 @@ class OnyxStylusHandler(
 
             // Render the new shape to the bitmap
             renderShapeToBitmap(shape)
-            renderToScreen(sv, bitmap)
+            renderBitmapToScreen(sv, bitmap)
         }
     }
 
@@ -347,7 +347,7 @@ class OnyxStylusHandler(
     /**
      * Renders bitmap to screen
      */
-    private fun renderToScreen(surfaceView: SurfaceView, bitmap: Bitmap?) {
+    private fun renderBitmapToScreen(surfaceView: SurfaceView, bitmap: Bitmap?) {
         if (bitmap != null) {
             rxManager.enqueue(
                 RendererToScreenRequest(

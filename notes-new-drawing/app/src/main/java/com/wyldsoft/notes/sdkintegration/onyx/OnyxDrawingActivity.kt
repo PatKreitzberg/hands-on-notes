@@ -257,13 +257,6 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
         return rxManager!!
     }
 
-
-
-
-
-
-
-
     // Add method to clear all drawings
     fun clearDrawing() {
         stylusHandler?.clearDrawing()
