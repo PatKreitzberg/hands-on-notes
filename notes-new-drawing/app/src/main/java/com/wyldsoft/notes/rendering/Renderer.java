@@ -3,7 +3,7 @@ package com.wyldsoft.notes.rendering;
 import android.graphics.Bitmap;
 import android.view.SurfaceView;
 
-import com.wyldsoft.notes.shapemanagement.shapes.Shape;
+import com.wyldsoft.notes.shapemanagement.shapes.BaseShape;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public interface Renderer {
     void renderToBitmap(SurfaceView surfaceView,
                         RendererHelper.RenderContext renderContext);
 
-    void renderToBitmap(final List<Shape> shapes,
+    void renderToBitmap(final List<BaseShape> shapes,
                         final RendererHelper.RenderContext renderContext);
 
     void renderToScreen(final SurfaceView surfaceView, final Bitmap bitmap);

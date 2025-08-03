@@ -193,12 +193,19 @@
     <text x="1130" y="1435" font-family="Arial, sans-serif" font-size="11" text-anchor="middle">• Image export</text>
     <text x="1130" y="1455" font-family="Arial, sans-serif" font-size="11" text-anchor="middle">• Import handling</text>
     
-    <!-- GeometryManager -->
+    <!-- ViewportManager -->
     <rect x="200" y="1500" width="180" height="100" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
-    <text x="290" y="1525" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold">GeometryManager</text>
-    <text x="290" y="1545" font-family="Arial, sans-serif" font-size="11" text-anchor="middle">• Shape detection</text>
-    <text x="290" y="1565" font-family="Arial, sans-serif" font-size="11" text-anchor="middle">• Perfection algo</text>
-    <text x="290" y="1585" font-family="Arial, sans-serif" font-size="11" text-anchor="middle">• Shape creation</text>
+    <text x="290" y="1525" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold">ViewportManager</text>
+    <text x="290" y="1545" font-family="Arial, sans-serif" font-size="11" text-anchor="middle">• Coordinate transform</text>
+    <text x="290" y="1565" font-family="Arial, sans-serif" font-size="11" text-anchor="middle">• Zoom/Pan state</text>
+    <text x="290" y="1585" font-family="Arial, sans-serif" font-size="11" text-anchor="middle">• Infinite scroll</text>
+    
+    <!-- GeometryManager -->
+    <rect x="1040" y="1500" width="180" height="100" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
+    <text x="1130" y="1525" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" font-weight="bold">GeometryManager</text>
+    <text x="1130" y="1545" font-family="Arial, sans-serif" font-size="11" text-anchor="middle">• Shape detection</text>
+    <text x="1130" y="1565" font-family="Arial, sans-serif" font-size="11" text-anchor="middle">• Perfection algo</text>
+    <text x="1130" y="1585" font-family="Arial, sans-serif" font-size="11" text-anchor="middle">• Shape creation</text>
     
     <!-- EraseManager -->
     <rect x="410" y="1500" width="180" height="100" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
@@ -283,6 +290,7 @@
   <line x1="1050" y1="640" x2="290" y2="1370" stroke="#666" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#dependency)"/>
   <line x1="1050" y1="640" x2="500" y2="1370" stroke="#666" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#dependency)"/>
   <line x1="1050" y1="640" x2="710" y2="1370" stroke="#666" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#dependency)"/>
+  <line x1="1050" y1="640" x2="290" y2="1500" stroke="#666" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#dependency)"/>
   
   <!-- MainActivity to SDK -->
   <line x1="800" y1="280" x2="750" y2="1710" stroke="#666" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#dependency)"/>

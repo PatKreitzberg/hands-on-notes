@@ -7,7 +7,7 @@ import com.wyldsoft.notes.shapemanagement.shapes.CharcoalScribbleShape;
 import com.wyldsoft.notes.shapemanagement.shapes.MarkerScribbleShape;
 import com.wyldsoft.notes.shapemanagement.shapes.NewBrushScribbleShape;
 import com.wyldsoft.notes.shapemanagement.shapes.NormalPencilShape;
-import com.wyldsoft.notes.shapemanagement.shapes.Shape;
+import com.wyldsoft.notes.shapemanagement.shapes.BaseShape;
 import com.onyx.android.sdk.data.note.PenTexture;
 import com.onyx.android.sdk.pen.NeoPenConfig;
 import com.onyx.android.sdk.pen.TouchHelper;
@@ -42,8 +42,8 @@ public class ShapeFactory {
         }
     }
 
-    public static Shape createShape(int type) {
-        Shape shape;
+    public static BaseShape createShape(int type) {
+        BaseShape shape;
         switch (type) {
             case SHAPE_PENCIL_SCRIBBLE:
                 shape = new NormalPencilShape();

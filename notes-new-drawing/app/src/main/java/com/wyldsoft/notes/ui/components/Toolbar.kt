@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wyldsoft.notes.ExcludeRects
 import com.wyldsoft.notes.PenIconUtils
 import kotlinx.coroutines.launch
 
@@ -22,7 +21,7 @@ import com.wyldsoft.notes.presentation.viewmodel.EditorViewModel
 
 
 @Composable
-fun UpdatedToolbar(
+fun Toolbar(
     viewModel: EditorViewModel,
     currentPenProfile: PenProfile,
     isStrokeOptionsOpen: Boolean

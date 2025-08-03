@@ -2,7 +2,7 @@ package com.wyldsoft.notes.shapemanagement
 
 import android.graphics.RectF
 import com.onyx.android.sdk.pen.data.TouchPointList
-import com.wyldsoft.notes.shapemanagement.shapes.Shape
+import com.wyldsoft.notes.shapemanagement.shapes.BaseShape
 
 class EraseManager {
     companion object {
@@ -11,10 +11,10 @@ class EraseManager {
 
     fun findIntersectingShapes(
         touchPointList: TouchPointList,
-        drawnShapes: List<Shape>,
+        drawnShapes: List<BaseShape>,
         eraseRadius: Float = ERASE_RADIUS
-    ): List<Shape> {
-        val intersectingShapes = mutableListOf<Shape>()
+    ): List<BaseShape> {
+        val intersectingShapes = mutableListOf<BaseShape>()
 
         for (shape in drawnShapes) {
             if (shape.hitTestPoints(touchPointList, eraseRadius)) {
@@ -25,7 +25,7 @@ class EraseManager {
         return intersectingShapes
     }
 
-    fun calculateRefreshRect(erasedShapes: List<Shape>): RectF? {
+    fun calculateRefreshRect(erasedShapes: List<BaseShape>): RectF? {
         if (erasedShapes.isEmpty()) return null
 
         var refreshRect: RectF? = null

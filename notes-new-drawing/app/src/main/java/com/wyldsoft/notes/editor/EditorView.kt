@@ -1,7 +1,6 @@
 package com.wyldsoft.notes.editor
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -11,7 +10,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.wyldsoft.notes.DrawingCanvas
 import com.wyldsoft.notes.presentation.viewmodel.EditorViewModel
 import com.wyldsoft.notes.presentation.viewmodel.ViewModelFactory
-import com.wyldsoft.notes.ui.components.UpdatedToolbar
+import com.wyldsoft.notes.ui.components.Toolbar
 import com.wyldsoft.notes.ui.components.ViewportInfo
 
 @Composable
@@ -38,7 +37,7 @@ fun EditorView(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            UpdatedToolbar(
+            Toolbar(
                 viewModel = viewModel,
                 currentPenProfile = currentPenProfile,
                 isStrokeOptionsOpen = uiState.isStrokeOptionsOpen

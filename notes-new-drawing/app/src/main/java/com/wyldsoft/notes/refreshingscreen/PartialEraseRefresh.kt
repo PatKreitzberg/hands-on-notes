@@ -8,14 +8,14 @@ import android.view.SurfaceView
 import com.onyx.android.sdk.api.device.epd.EpdController
 import com.onyx.android.sdk.rx.RxManager
 import com.wyldsoft.notes.rendering.RendererHelper
-import com.wyldsoft.notes.shapemanagement.shapes.Shape
+import com.wyldsoft.notes.shapemanagement.shapes.BaseShape
 
 class PartialEraseRefresh {
     
     fun performPartialRefresh(
         surfaceView: SurfaceView,
         refreshRect: RectF,
-        remainingShapes: List<Shape>,
+        remainingShapes: List<BaseShape>,
         rendererHelper: RendererHelper,
         rxManager: RxManager
     ) {
@@ -34,7 +34,7 @@ class PartialEraseRefresh {
     private class PartialRefreshRequest(
         private val surfaceView: SurfaceView,
         private val refreshRect: RectF,
-        private val shapesToRender: List<Shape>,
+        private val shapesToRender: List<BaseShape>,
         private val rendererHelper: RendererHelper
     ) : com.onyx.android.sdk.rx.RxRequest() {
         
