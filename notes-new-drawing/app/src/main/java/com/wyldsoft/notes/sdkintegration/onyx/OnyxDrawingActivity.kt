@@ -208,7 +208,6 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
     }
 
     override fun forceScreenRefresh() {
-        Log.d("Onyx", "forceScreenRefresh() called")
         EpdController.enablePost(surfaceView, 1) // this is absolutely necessary to ensure the screen refreshes properly
         surfaceView?.let { sv ->
             cleanSurfaceView(sv)
@@ -282,9 +281,12 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
     private fun handleErasing(erasePointList: TouchPointList) {
         Log.d(TAG, "handleErasing called with ${erasePointList.size()} points")
         
+        // Convert erase points from SurfaceViewCoordinates to NoteCoordinates
+        val noteErasePointList = convertTouchPointListToNoteCoordinates(erasePointList)
+        
         // Find shapes that intersect with the erase touch points
         val intersectingShapes = eraseManager.findIntersectingShapes(
-            erasePointList, 
+            noteErasePointList, 
             drawnShapes
         )
         
@@ -325,27 +327,7 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
             val shape = createShapeFromPenType(touchPointList)
             
             // Convert touch points to NoteCoordinates for storage
-            val notePointList = TouchPointList()
-            val viewportManager = viewModel?.viewportManager
-            
-            for (i in 0 until touchPointList.size()) {
-                val tp = touchPointList.get(i)
-                if (viewportManager != null) {
-                    // Convert from SurfaceViewCoordinates to NoteCoordinates
-                    val notePoint = viewportManager.surfaceToNoteCoordinates(tp.x, tp.y)
-                    val noteTouchPoint = TouchPoint(
-                        notePoint.x, 
-                        notePoint.y, 
-                        tp.pressure, 
-                        tp.size, 
-                        tp.timestamp
-                    )
-                    notePointList.add(noteTouchPoint)
-                } else {
-                    // If no viewport manager, use original coordinates
-                    notePointList.add(tp)
-                }
-            }
+            val notePointList = convertTouchPointListToNoteCoordinates(touchPointList)
             
             // Update shape with note coordinates
             shape.setTouchPointList(notePointList)
@@ -464,6 +446,43 @@ open class OnyxDrawingActivity : BaseDrawingActivity() {
             
             canvas.restore()
         }
+    }
+
+    /**
+     * Converts a TouchPointList from SurfaceViewCoordinates to NoteCoordinates
+     * using the current ViewportManager transformation.
+     * 
+     * @param surfacePointList The touch points in SurfaceViewCoordinates
+     * @return A new TouchPointList with points converted to NoteCoordinates
+     */
+    private fun convertTouchPointListToNoteCoordinates(surfacePointList: TouchPointList): TouchPointList {
+        val notePointList = TouchPointList()
+        val viewportManager = viewModel?.viewportManager
+        
+        if (viewportManager == null) {
+            Log.w(TAG, "ViewportManager is null in convertTouchPointListToNoteCoordinates")
+        }
+        
+        for (i in 0 until surfacePointList.size()) {
+            val tp = surfacePointList.get(i)
+            if (viewportManager != null) {
+                // Convert from SurfaceViewCoordinates to NoteCoordinates
+                val notePoint = viewportManager.surfaceToNoteCoordinates(tp.x, tp.y)
+                val noteTouchPoint = TouchPoint(
+                    notePoint.x, 
+                    notePoint.y, 
+                    tp.pressure, 
+                    tp.size, 
+                    tp.timestamp
+                )
+                notePointList.add(noteTouchPoint)
+            } else {
+                // If no viewport manager, use original coordinates
+                notePointList.add(tp)
+            }
+        }
+        
+        return notePointList
     }
 
     // Add method to clear all drawings
